@@ -85,22 +85,22 @@ exports.cleanupUser = functions.auth.user().onDelete(async (user) => {
   return admin.database().ref(`/stripe_customers/${user.uid}`).remove();
 });
 
-
-exports.requestRefund = functions.database.ref('/stripe_customers/{userId}/returns/{id}').onUpdate(async (change, context) => {
-  if (change.after.approved !== true) {
-    return // something
-  }
+// hold off on this for now
+// exports.requestRefund = functions.database.ref('/stripe_customers/{userId}/returns/{id}').onUpdate(async (change, context) => {
+//   if (change.after.approved !== true) {
+//     return // something
+//   }
   
-  // check if user is authorized to request return
-  if (context.auth.token.moderator !== true) {
-    return // something
-  }
-  const val = change.after.val()
-  const charge = val.charge;
-  const customer = val.customer_id;
-  const refund = await stripe.refunds.create({charge: charge});
-  await change.after.ref.parent.set(response);
-}
+//   // check if user is authorized to request return
+//   if (context.auth.token.moderator !== true) {
+//     return // something
+//   }
+//   const val = change.after.val()
+//   const charge = val.charge;
+//   const customer = val.customer_id;
+//   const refund = await stripe.refunds.create({charge: charge});
+//   await change.after.ref.parent.set(response);
+// })
 
 // To keep on top of errors, we should raise a verbose error report with Stackdriver rather
 // than simply relying on console.error. This will calculate users affected + send you email
