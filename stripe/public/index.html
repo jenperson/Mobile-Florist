@@ -101,9 +101,10 @@
     <!-- Import and configure the Firebase SDK -->
     <!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
     <!-- If you do not serve/host your project using Firebase Hosting see https://firebase.google.com/docs/web/setup -->
-    <script src="/__/firebase/4.2.0/firebase-app.js"></script>
-    <script src="/__/firebase/4.2.0/firebase-auth.js"></script>
-    <script src="/__/firebase/4.2.0/firebase-database.js"></script>
+    <script src="/__/firebase/5.2.0//firebase-app.js"></script>
+    <script src="/__/firebase/5.2.0//firebase-auth.js"></script>
+    <script src="/__/firebase/5.2.0//firebase-database.js"></script>
+    <script src="/__/firebase/5.2.0//firebase-firestore.js"></script>
     <script src="/__/firebase/init.js"></script>
 
     <!-- Import Firebase UI -->
@@ -155,18 +156,34 @@
         },
         methods: {
           listen: function() {
-            firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/customer_id`).on('value', snapshot => {
-              this.stripeCustomerInitialized = (snapshot.val() !== null);
+            firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}.customer_id`).onSnapshot(snapshot => {
+              this.stripeCustomerInitialized = (snapshot.data() !== null);
             }, () => {
               this.stripeCustomerInitialized = false;
             });
-            firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/sources`).on('value', snapshot => {
-              this.sources = snapshot.val();
+            //firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/sources`).on('value', snapshot => {
+            firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}`).collection('sources').onSnapshot(snapshot => {
+              console.log("stripe customers collection");
+              console.log(snapshot);
+              snapshot.forEach(doc => {
+                const id = doc.id;
+                this.sources[id] = doc.data();
+                console.log(this.sources[id]);
+              })
+              //this.sources = snapshot.data();
+              
             }, () => {
               this.sources = {};
             });
-            firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).on('value', snapshot => {
-              this.charges = snapshot.val();
+            firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}`).collection('charges').onSnapshot(snapshot => {
+           // firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).on('value', snapshot => {
+            console.log("charges");
+            console.log(snapshot);
+             snapshot.forEach(doc => {
+               const id = doc.id;
+               this.charges[id] = doc.data();
+               console.log(this.charges[id]);
+             })
             }, () => {
               this.charges = {};
             });
@@ -182,7 +199,8 @@
               if (response.error) {
                 this.newCreditCard.error = response.error.message;
               } else {
-                firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/sources`).push({token: response.id}).then(() => {
+                firebase.firestore().collection('stripe_customers').doc(this.currentUser.uid).collection('sources').add({token: response.id}).then(() => {
+                //firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/sources`).push({token: response.id}).then(() => {
                   this.newCreditCard = {
                     number: '',
                     cvc: '',
@@ -195,7 +213,8 @@
             });
           },
           submitNewCharge: function() {
-            firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).push({
+            firebase.firestore().collection('stripe_customers').doc(this.currentUser.uid).collection('charges').add({
+            //firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).push({
               source: this.newCharge.source,
               amount: parseInt(this.newCharge.amount)
             });
