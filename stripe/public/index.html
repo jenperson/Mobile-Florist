@@ -18,7 +18,7 @@
           <div v-if="stripeCustomerInitialized">
             <h3>Credit Cards</h3>
             <ul>
-              <li v-for="(source, id) in sources">
+              <li v-for="source in sources">
                 <span v-if="source.id">
                   {{ source.brand }} &hellip;{{ source.last4 }}
                   (exp. {{ source.exp_month }}/{{ source.exp_year }})
@@ -164,27 +164,25 @@
             //firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/sources`).on('value', snapshot => {
             firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}`).collection('sources').onSnapshot(snapshot => {
               console.log("stripe customers collection");
-              console.log(snapshot);
+             let newSources = {};
               snapshot.forEach(doc => {
                 const id = doc.id;
-                this.sources[id] = doc.data();
-                console.log(this.sources[id]);
+                newSources[id] = doc.data();
               })
-              //this.sources = snapshot.data();
-              
+              this.sources = newSources;
             }, () => {
               this.sources = {};
             });
             firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}`).collection('charges').onSnapshot(snapshot => {
            // firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).on('value', snapshot => {
-            console.log("charges");
-            console.log(snapshot);
+            let newCharges = {};
              snapshot.forEach(doc => {
                const id = doc.id;
-               this.charges[id] = doc.data();
-               console.log(this.charges[id]);
+               newCharges[id] = doc.data();
              })
+             this.charges = newCharges;
             }, () => {
+              console.log("cleared charges");
               this.charges = {};
             });
           },
