@@ -7,17 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		36BCDFB22122387100B0BE54 /* AuthHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB12122387100B0BE54 /* AuthHandler.swift */; };
 		36E04BE12122204D006740F1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E04BE02122204D006740F1 /* AppDelegate.swift */; };
 		36E04BE32122204D006740F1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E04BE22122204D006740F1 /* ViewController.swift */; };
 		36E04BE62122204D006740F1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BE42122204D006740F1 /* Main.storyboard */; };
 		36E04BE821222050006740F1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BE721222050006740F1 /* Assets.xcassets */; };
 		36E04BEB21222050006740F1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BE921222050006740F1 /* LaunchScreen.storyboard */; };
 		36E04BF321222081006740F1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BF221222081006740F1 /* GoogleService-Info.plist */; };
+		36E3EBD8212231DF00FFCB4A /* SourceDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E3EBD7212231DF00FFCB4A /* SourceDownloader.swift */; };
 		9FD8454BD09553018959D874 /* Pods_GoatLandscaping.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GoatLandscaping.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		36BCDFB12122387100B0BE54 /* AuthHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHandler.swift; sourceTree = "<group>"; };
 		36E04BDD2122204D006740F1 /* GoatLandscaping.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoatLandscaping.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36E04BE02122204D006740F1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		36E04BE22122204D006740F1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -26,6 +29,7 @@
 		36E04BEA21222050006740F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		36E04BEC21222050006740F1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		36E04BF221222081006740F1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		36E3EBD7212231DF00FFCB4A /* SourceDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceDownloader.swift; sourceTree = "<group>"; };
 		696E871F01771B43854979D5 /* Pods-GoatLandscaping.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoatLandscaping.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GoatLandscaping/Pods-GoatLandscaping.debug.xcconfig"; sourceTree = "<group>"; };
 		7CC3C05C39EF985280859753 /* Pods-GoatLandscaping.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoatLandscaping.release.xcconfig"; path = "Pods/Target Support Files/Pods-GoatLandscaping/Pods-GoatLandscaping.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -64,7 +68,9 @@
 			isa = PBXGroup;
 			children = (
 				36E04BE02122204D006740F1 /* AppDelegate.swift */,
+				36BCDFB12122387100B0BE54 /* AuthHandler.swift */,
 				36E04BE22122204D006740F1 /* ViewController.swift */,
+				36E3EBD7212231DF00FFCB4A /* SourceDownloader.swift */,
 				36E04BE42122204D006740F1 /* Main.storyboard */,
 				36E04BE721222050006740F1 /* Assets.xcassets */,
 				36E04BE921222050006740F1 /* LaunchScreen.storyboard */,
@@ -103,6 +109,7 @@
 				36E04BDA2122204D006740F1 /* Frameworks */,
 				36E04BDB2122204D006740F1 /* Resources */,
 				DD4F6E88EF76BC040DB7F2AA /* [CP] Embed Pods Frameworks */,
+				FAC3D1FD52830635FFA4370F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -169,9 +176,11 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-GoatLandscaping/Pods-GoatLandscaping-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/BoringSSL/openssl.framework",
+				"${BUILT_PRODUCTS_DIR}/GTMOAuth2/GTMOAuth2.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
+				"${BUILT_PRODUCTS_DIR}/Stripe/Stripe.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC/GRPCClient.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-Core/grpc.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-ProtoRPC/ProtoRPC.framework",
@@ -182,9 +191,11 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMOAuth2.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stripe.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GRPCClient.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpc.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ProtoRPC.framework",
@@ -215,6 +226,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		FAC3D1FD52830635FFA4370F /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-GoatLandscaping/Pods-GoatLandscaping-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseUI/FirebaseAuthUI.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseUI/FirebaseGoogleAuthUI.bundle",
+				"${PODS_ROOT}/GoogleSignIn/Resources/GoogleSignIn.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseAuthUI.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseGoogleAuthUI.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleSignIn.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-GoatLandscaping/Pods-GoatLandscaping-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -222,6 +255,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36BCDFB22122387100B0BE54 /* AuthHandler.swift in Sources */,
+				36E3EBD8212231DF00FFCB4A /* SourceDownloader.swift in Sources */,
 				36E04BE32122204D006740F1 /* ViewController.swift in Sources */,
 				36E04BE12122204D006740F1 /* AppDelegate.swift in Sources */,
 			);

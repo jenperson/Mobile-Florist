@@ -10,4 +10,7 @@ target 'GoatLandscaping' do
   pod 'Firebase/Auth'
   pod 'Firebase/Firestore'
   pod 'Firebase/Functions'
+  pod 'Stripe'
+  pod 'FirebaseUI/Auth'
+  pod 'FirebaseUI/Google'
 end
