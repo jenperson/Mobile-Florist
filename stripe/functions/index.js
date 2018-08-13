@@ -26,13 +26,10 @@ const currency = functions.config().stripe.currency || 'USD';
 // Charge the Stripe customer whenever an amount is written to the Realtime database
 exports.createStripeCharge = functions.firestore.document('stripe_customers/{userId}/charges/{id}').onCreate(async (snap, context) => {
       const val = snap.data();
-      console.log(snap.data());
       try {
         // Look up the Stripe customer id written in createStripeCustomer
         const snapshot = await admin.firestore().collection(`stripe_customers`).doc(context.params.userId).get()
         const snapval = snapshot.data();
-        console.log("getting colleciton")
-        console.log(snapval);
         const customer = snapval.customer_id
         // Create a charge using the pushId as the idempotency key
         // protecting against double charges
@@ -43,7 +40,6 @@ exports.createStripeCharge = functions.firestore.document('stripe_customers/{use
           charge.source = val.source;
         }
         const response = await stripe.charges.create(charge, {idempotency_key: idempotencyKey});
-        console.log(response);
         // If the result is successful, write it back to the database
         return snap.ref.set(response, { merge: true });
       } catch(error) {

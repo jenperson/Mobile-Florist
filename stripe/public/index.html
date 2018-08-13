@@ -174,7 +174,6 @@
               this.sources = {};
             });
             firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}`).collection('charges').onSnapshot(snapshot => {
-           // firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).on('value', snapshot => {
             let newCharges = {};
              snapshot.forEach(doc => {
                const id = doc.id;
@@ -198,7 +197,6 @@
                 this.newCreditCard.error = response.error.message;
               } else {
                 firebase.firestore().collection('stripe_customers').doc(this.currentUser.uid).collection('sources').add({token: response.id}).then(() => {
-                //firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/sources`).push({token: response.id}).then(() => {
                   this.newCreditCard = {
                     number: '',
                     cvc: '',
@@ -212,7 +210,6 @@
           },
           submitNewCharge: function() {
             firebase.firestore().collection('stripe_customers').doc(this.currentUser.uid).collection('charges').add({
-            //firebase.database().ref(`/stripe_customers/${this.currentUser.uid}/charges`).push({
               source: this.newCharge.source,
               amount: parseInt(this.newCharge.amount)
             });
