@@ -156,7 +156,7 @@
         },
         methods: {
           listen: function() {
-            firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}.customer_id`).onSnapshot(snapshot => {
+            firebase.firestore().collection('stripe_customers').doc(`${this.currentUser.uid}`).onSnapshot(snapshot => {
               this.stripeCustomerInitialized = (snapshot.data() !== null);
             }, () => {
               this.stripeCustomerInitialized = false;
