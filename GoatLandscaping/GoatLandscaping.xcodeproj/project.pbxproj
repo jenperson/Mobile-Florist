@@ -7,9 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3691AD55212CA2E0006DC888 /* MakePaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3691AD54212CA2E0006DC888 /* MakePaymentViewController.swift */; };
+		3691AD5A212DD759006DC888 /* Charge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3691AD59212DD759006DC888 /* Charge.swift */; };
+		36AC2C50212B772F00C11E60 /* PaymentDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36AC2C4F212B772F00C11E60 /* PaymentDownloader.swift */; };
 		36BCDFB22122387100B0BE54 /* AuthHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB12122387100B0BE54 /* AuthHandler.swift */; };
+		36BCDFB42124C27C00B0BE54 /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB32124C27C00B0BE54 /* Source.swift */; };
+		36BCDFB62127392300B0BE54 /* SourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */; };
 		36E04BE12122204D006740F1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E04BE02122204D006740F1 /* AppDelegate.swift */; };
-		36E04BE32122204D006740F1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E04BE22122204D006740F1 /* ViewController.swift */; };
+		36E04BE32122204D006740F1 /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E04BE22122204D006740F1 /* SourceViewController.swift */; };
 		36E04BE62122204D006740F1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BE42122204D006740F1 /* Main.storyboard */; };
 		36E04BE821222050006740F1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BE721222050006740F1 /* Assets.xcassets */; };
 		36E04BEB21222050006740F1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BE921222050006740F1 /* LaunchScreen.storyboard */; };
@@ -20,10 +25,15 @@
 
 /* Begin PBXFileReference section */
 		34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GoatLandscaping.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3691AD54212CA2E0006DC888 /* MakePaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakePaymentViewController.swift; sourceTree = "<group>"; };
+		3691AD59212DD759006DC888 /* Charge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charge.swift; sourceTree = "<group>"; };
+		36AC2C4F212B772F00C11E60 /* PaymentDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentDownloader.swift; sourceTree = "<group>"; };
 		36BCDFB12122387100B0BE54 /* AuthHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHandler.swift; sourceTree = "<group>"; };
+		36BCDFB32124C27C00B0BE54 /* Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
+		36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceTableViewCell.swift; sourceTree = "<group>"; };
 		36E04BDD2122204D006740F1 /* GoatLandscaping.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoatLandscaping.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36E04BE02122204D006740F1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		36E04BE22122204D006740F1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		36E04BE22122204D006740F1 /* SourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewController.swift; sourceTree = "<group>"; };
 		36E04BE52122204D006740F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		36E04BE721222050006740F1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		36E04BEA21222050006740F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -46,6 +56,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3691AD56212CA4F6006DC888 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				36E04BE22122204D006740F1 /* SourceViewController.swift */,
+				3691AD54212CA2E0006DC888 /* MakePaymentViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		3691AD57212CA510006DC888 /* Objects */ = {
+			isa = PBXGroup;
+			children = (
+				3691AD59212DD759006DC888 /* Charge.swift */,
+				36BCDFB32124C27C00B0BE54 /* Source.swift */,
+			);
+			path = Objects;
+			sourceTree = "<group>";
+		};
+		3691AD58212CA55E006DC888 /* Handlers */ = {
+			isa = PBXGroup;
+			children = (
+				36BCDFB12122387100B0BE54 /* AuthHandler.swift */,
+				36E3EBD7212231DF00FFCB4A /* SourceDownloader.swift */,
+				36AC2C4F212B772F00C11E60 /* PaymentDownloader.swift */,
+			);
+			path = Handlers;
+			sourceTree = "<group>";
+		};
 		36E04BD42122204D006740F1 = {
 			isa = PBXGroup;
 			children = (
@@ -68,10 +106,11 @@
 			isa = PBXGroup;
 			children = (
 				36E04BE02122204D006740F1 /* AppDelegate.swift */,
-				36BCDFB12122387100B0BE54 /* AuthHandler.swift */,
-				36E04BE22122204D006740F1 /* ViewController.swift */,
-				36E3EBD7212231DF00FFCB4A /* SourceDownloader.swift */,
+				3691AD58212CA55E006DC888 /* Handlers */,
+				3691AD57212CA510006DC888 /* Objects */,
 				36E04BE42122204D006740F1 /* Main.storyboard */,
+				3691AD56212CA4F6006DC888 /* ViewControllers */,
+				36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */,
 				36E04BE721222050006740F1 /* Assets.xcassets */,
 				36E04BE921222050006740F1 /* LaunchScreen.storyboard */,
 				36E04BF221222081006740F1 /* GoogleService-Info.plist */,
@@ -257,7 +296,12 @@
 			files = (
 				36BCDFB22122387100B0BE54 /* AuthHandler.swift in Sources */,
 				36E3EBD8212231DF00FFCB4A /* SourceDownloader.swift in Sources */,
-				36E04BE32122204D006740F1 /* ViewController.swift in Sources */,
+				36BCDFB62127392300B0BE54 /* SourceTableViewCell.swift in Sources */,
+				36AC2C50212B772F00C11E60 /* PaymentDownloader.swift in Sources */,
+				36E04BE32122204D006740F1 /* SourceViewController.swift in Sources */,
+				3691AD55212CA2E0006DC888 /* MakePaymentViewController.swift in Sources */,
+				36BCDFB42124C27C00B0BE54 /* Source.swift in Sources */,
+				3691AD5A212DD759006DC888 /* Charge.swift in Sources */,
 				36E04BE12122204D006740F1 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

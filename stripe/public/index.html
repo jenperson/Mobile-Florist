@@ -194,6 +194,7 @@
               address_zip: this.newCreditCard.address_zip
             }, (status, response) => {
               if (response.error) {
+                console.log.response.error
                 this.newCreditCard.error = response.error.message;
               } else {
                 firebase.firestore().collection('stripe_customers').doc(this.currentUser.uid).collection('sources').add({token: response.id}).then(() => {

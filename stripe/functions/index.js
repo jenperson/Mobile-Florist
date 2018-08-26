@@ -59,7 +59,7 @@ exports.createStripeCustomer = functions.auth.user().onCreate(async (user) => {
 });
 
 // Add a payment source (card) for a user by writing a stripe payment source token to Realtime database
-exports.addPaymentSource = functions.firestore.document('/stripe_customers/{userId}/sources/{pushId}').onWrite(async (change, context) => {
+exports.addPaymentSource = functions.firestore.document('/stripe_customers/{userId}/tokens/{pushId}').onWrite(async (change, context) => {
       const source = change.after.data();
       const token = source.token;
       if (source === null){
@@ -71,8 +71,12 @@ exports.addPaymentSource = functions.firestore.document('/stripe_customers/{user
         //const snapshot = await admin.database().ref(`/stripe_customers/${context.params.userId}/customer_id`).once('value');
         const customer =  snapshot.data().customer_id;
         const response = await stripe.customers.createSource(customer, {source: token});
-        return change.after.ref.set(response, {merge: true});
+        console.log("response")
+        console.log(response)
+        return admin.firestore().collection('stripe_customers').doc(context.params.userId).collection("sources").doc(response.fingerprint).set(response, {merge: true});
+        //change.after.ref.set(response, {merge: true});
       } catch (error) {
+        console.log("error")
         await change.after.ref.set({'error':userFacingMessage(error)},{merge:true});
         return reportError(error, {user: context.params.userId});
       }

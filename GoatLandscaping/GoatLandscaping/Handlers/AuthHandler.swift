@@ -26,26 +26,10 @@ class AuthHandler: NSObject, FUIAuthDelegate {
     self.authUI?.providers = providers
   }
   
-  func checkLoginStatus(completion: @escaping (Bool) -> Void) {
+  func checkLoginStatus(completion: @escaping (User?) -> Void) {
     Auth.auth().addStateDidChangeListener { auth, user in
-      if let currUser = auth.currentUser {
-//        if currUser.isAnonymous {
-//          completion(false)
-//          return
-//        }
-        self.user = currUser
-        completion(true)
-      } else {
-        //self.signIn()
-        completion(false)
-        //Auth.auth().signInAnonymously(completion: nil)
-      }
+        completion(Auth.auth().currentUser)
     }
-//
-//    Auth.auth().createUser(withEmail: "test@test.com", password: "test") { (authresult, err) in
-//      guard let authresult = authresult else { return }
-//      let user = authresult.user
-//    }
   }
   
   
