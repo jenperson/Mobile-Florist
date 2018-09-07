@@ -67,6 +67,9 @@
                   {{ charge.source.brand }} &hellip;{{ charge.source.last4 }}
                   (exp. {{ charge.source.exp_month }}/{{ charge.source.exp_year }})
                 </span>
+                <button @click="requestRefund(charge)">
+                  Request a Refund on this purchase
+                </button>
                 <span v-else>&hellip;<span>
               </li>
             </ul>
@@ -94,6 +97,16 @@
             </div>
           </div>
           <div v-else>&hellip;</div>
+          <div v-if="currentUser.isAdminUser">
+            <li v-for="refundRequest in refundRequests">
+              <button v-if="!refundRequests.fulfilledAt" @click="issueRefund(refundRequest)">
+                Refund user({{refundRequests.userId}} request for {{refundRequests.amount}}
+              </button>
+              <span v-else>
+                Refunded user({{refundRequests.userId}} request for {{refundRequests.amount}} at {{refundRequest.fulfilledAt}} 
+              </span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -214,6 +227,27 @@
               source: this.newCharge.source,
               amount: parseInt(this.newCharge.amount)
             });
+          },
+          // what happens if there are a lot of button presses. should we set the rules to only allow a write 
+          // if it's a new document. Would love this to fail if it already exists... I guess you could do 
+          // stuff like partial refunds. What about if a user requested a refund and then changed their mind--
+          // I think this would handle that scenario, but it would be like probably more valuable to create
+          // a new doc for each request and only allow a valid one hmmmmmm 
+          // also normally people do refunds via email? 
+          requestRefund: function(charge) {
+            firebase.firestore().collection('refund_requests').doc(charge.id).set({
+              chargeId: charge.id,
+              amount: charge.amount,
+              userId: this.currentUser.uid,
+              userRequestedAt: Date.now(),
+              request_details: 'manually requested'
+            })
+          },
+          issueRefund: function(refundRequest) {
+            firebase.firestore().collection('refund_requests').doc(refundRequest.id).set({
+              approvedAt: Date.now(),
+              approverId: this.currentUser.uid,
+            }, {merge: true})
           },
           signOut: function() {
             firebase.auth().signOut()

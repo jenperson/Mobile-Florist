@@ -58,6 +58,33 @@ exports.createStripeCustomer = functions.auth.user().onCreate(async (user) => {
   return admin.firestore().collection('stripe_customers').doc(user.uid).set({customer_id: customer.id});
 });
 
+// TODO(sgoldblatt): add these into transactions. Consider if they should be two different DBs
+exports.refundCharge = firebase.firestore().document('refund_requests/{id}').onWite(async (change, context) => {
+  const refund = change.after.data();
+
+  // if this were a different db this wouldn't be necessary or could be checked in rules
+  if (!refund.approverId) {
+    console.log("refund could not be processed. No approver specified")
+  }
+
+  // this could just be checked in rules....
+  const approver = await admin.firestore().collection('stripe_customers').doc(refund.approverId).get();
+  if (!approver.isAdminUser) {
+    console.log("Approver is not an admin")
+  }
+
+  // wrap this in a try catch b/c what if this call fails due to stripe issues....
+  const response = await stripe.refunds.create({charege: refund.chargeId})
+  
+  // would be nice to get a CONST here instead of the string check
+  if (response.status === "succeeded") {
+    change.after.ref.set({refundedAt: Date.now(), response}, {merge: true})
+  } else {
+    change.after.ref.set({attempedAt: Date.now(), response}, {merge: true})
+  }
+  
+})
+
 // Add a payment source (card) for a user by writing a stripe payment source token to Realtime database
 exports.addPaymentSource = functions.firestore.document('/stripe_customers/{userId}/tokens/{pushId}').onWrite(async (change, context) => {
       const source = change.after.data();
