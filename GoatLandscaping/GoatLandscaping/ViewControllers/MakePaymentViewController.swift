@@ -18,7 +18,7 @@ class MakePaymentViewController: UIViewController {
   let sourceDownloader = SourceDownloader()
   var sources = [Source]()
   var selectedSource = 0
-  var price = 23100221
+  var price = 10999
   
   // MARK: Outlets
   
