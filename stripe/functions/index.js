@@ -25,31 +25,30 @@ const currency = functions.config().stripe.currency || 'USD';
 // [START chargecustomer]
 // Charge the Stripe customer whenever an amount is written to the Realtime database
 exports.createStripeCharge = functions.firestore.document('stripe_customers/{userId}/charges/{id}').onCreate(async (snap, context) => {
-      const val = snap.data();
-      try {
-        // Look up the Stripe customer id written in createStripeCustomer
-        const snapshot = await admin.firestore().collection(`stripe_customers`).doc(context.params.userId).get()
-        const snapval = snapshot.data();
-        const customer = snapval.customer_id
-        // Create a charge using the pushId as the idempotency key
-        // protecting against double charges
-        const amount = val.amount;
-        const idempotencyKey = context.params.id;
-        const charge = {amount, currency, customer};
-        if (val.source !== null) {
-          charge.source = val.source;
-        }
-        const response = await stripe.charges.create(charge, {idempotency_key: idempotencyKey});
-        // If the result is successful, write it back to the database
-        return snap.ref.set(response, { merge: true });
-      } catch(error) {
-        // We want to capture errors and render them in a user-friendly way, while
-        // still logging an exception with StackDriver
-        console.log(error);
-        await snap.ref.set({error: userFacingMessage(error)}, { merge: true });
-        return reportError(error, {user: context.params.userId});
-      }
-    });
+  const val = snap.data();
+  try {
+    // Look up the Stripe customer id written in createStripeCustomer
+    const snapshot = await admin.firestore().collection(`stripe_customers`).doc(context.params.userId).get();
+    const snapval = snapshot.data();
+    const customer = snapval.customer_id;
+    // Create a charge using the pushId as the idempotency key
+    // protecting against double charges
+    const amount = val.amount;
+    const idempotencyKey = context.params.id;
+    const charge = {amount, currency, customer};
+    if (val.source !== null) {
+      charge.source = val.source;
+    }
+    const response = await stripe.charges.create(charge, {idempotency_key: idempotencyKey});
+    // If the result is successful, write it back to the database
+    return snap.ref.set(response, { merge: true });
+  } catch(error) {
+    // We want to capture errors and render them in a user-friendly way, while
+    // still logging an exception with StackDriver
+    await snap.ref.set({error: userFacingMessage(error)}, { merge: true });
+    return reportError(error, {user: context.params.userId});
+  }
+});
 // [END chargecustomer]]
 
 // When a user is created, register them with Stripe
@@ -87,27 +86,22 @@ exports.refundCharge = firebase.firestore().document('refund_requests/{id}').onW
 
 // Add a payment source (card) for a user by writing a stripe payment source token to Realtime database
 exports.addPaymentSource = functions.firestore.document('/stripe_customers/{userId}/tokens/{pushId}').onWrite(async (change, context) => {
-      const source = change.after.data();
-      const token = source.token;
-      if (source === null){
-        return null;
-      }
+  const source = change.after.data();
+  const token = source.token;
+  if (source === null){
+    return null;
+  }
 
-      try {
-        const snapshot = await admin.firestore().collection('stripe_customers').doc(context.params.userId).get();
-        //const snapshot = await admin.database().ref(`/stripe_customers/${context.params.userId}/customer_id`).once('value');
-        const customer =  snapshot.data().customer_id;
-        const response = await stripe.customers.createSource(customer, {source: token});
-        console.log("response")
-        console.log(response)
-        return admin.firestore().collection('stripe_customers').doc(context.params.userId).collection("sources").doc(response.fingerprint).set(response, {merge: true});
-        //change.after.ref.set(response, {merge: true});
-      } catch (error) {
-        console.log("error")
-        await change.after.ref.set({'error':userFacingMessage(error)},{merge:true});
-        return reportError(error, {user: context.params.userId});
-      }
-    });
+  try {
+    const snapshot = await admin.firestore().collection('stripe_customers').doc(context.params.userId).get();
+    const customer =  snapshot.data().customer_id;
+    const response = await stripe.customers.createSource(customer, {source: token});
+    return admin.firestore().collection('stripe_customers').doc(context.params.userId).collection("sources").doc(response.fingerprint).set(response, {merge: true});
+  } catch (error) {
+    await change.after.ref.set({'error':userFacingMessage(error)},{merge:true});
+    return reportError(error, {user: context.params.userId});
+  }
+});
 
 // When a user deletes their account, clean up after them
 exports.cleanupUser = functions.auth.user().onDelete(async (user) => {
