@@ -48,16 +48,18 @@ class PaymentDownloader {
   //      source: this.newCharge.source,
   //      amount: parseInt(this.newCharge.amount)
 
-func makePayment(source: String, charge: Int, completion: @escaping (Error?)->Void) {
-    guard let uid = Auth.auth().currentUser?.uid else {
-      let error = NSError(domain:"", code:5, userInfo:nil)
-      completion(error)
-      return
-    }
-  db.collection("stripe_customers").document(uid).collection("charges").addDocument(data: [
-    "source": source,
-    "amount": charge
-  ]) { error in
+func makePayment(source: String?, charge: Int, completion: @escaping (Error?)->Void) {
+  guard let uid = Auth.auth().currentUser?.uid else {
+    let error = NSError(domain:"", code:5, userInfo:nil)
+    completion(error)
+    return
+  }
+  var data: [String: AnyObject] = ["amount": charge as AnyObject]
+  if let source = source {
+    data["source"] = source as AnyObject
+  }
+  
+  db.collection("stripe_customers").document(uid).collection("charges").addDocument(data: data) { error in
     if let error = error {
       completion(error)
       return

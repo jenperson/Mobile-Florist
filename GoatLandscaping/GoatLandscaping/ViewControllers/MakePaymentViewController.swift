@@ -18,7 +18,7 @@ class MakePaymentViewController: UIViewController {
   let sourceDownloader = SourceDownloader()
   var sources = [Source]()
   var selectedSource = 0
-  var price = 10999
+  var price = 202020
   
   // MARK: Outlets
   
@@ -34,6 +34,8 @@ class MakePaymentViewController: UIViewController {
     let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hidePickerView))
     self.view.addGestureRecognizer(tapGestureRecognizer)
     cardButton.tintColor = UIColor.black
+    cardPickerView.delegate = self
+    cardPickerView.dataSource = self
     cardPickerView.isHidden = true
     
     mockPayments()
@@ -47,6 +49,7 @@ class MakePaymentViewController: UIViewController {
         return
       }
       self.sources = sources
+      self.cardPickerView.reloadAllComponents()
       self.updateCardButton()
     }
   }
@@ -69,18 +72,22 @@ class MakePaymentViewController: UIViewController {
   }
   
   func makePayment(price: Int) {
-//    guard let uid = Auth.auth().currentUser?.uid else {
-//      print("no current user")
-//      return
-//    }
-    guard let source = sources[selectedSource].customer else { return }
+    let source = sources[selectedSource].id
     paymentDownloader.makePayment(source: source, charge: price) { error in
-      if let error = error {
-        print(error)
-        return
-      }
       
+      let okAction = UIAlertAction(title: "OK", style: .default, handler: { (action) in
+        
+      })
+      let alertController = UIAlertController(title: "Success!", message: "payment complete", preferredStyle: .alert)
+      alertController.addAction(okAction)
+      if let error = error {
+        alertController.title = "Error"
+        alertController.message = error as! String
+      }
+      self.navigationController?.present(alertController, animated: true, completion:nil)
     }
+    
+    
   }
   
   @objc func hidePickerView() {

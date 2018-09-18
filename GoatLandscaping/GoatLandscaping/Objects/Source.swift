@@ -27,6 +27,7 @@ class Source {
   var error: String?
   var exp_month: Int = 1
   var exp_year: Int = 2020
+  var fingerprint: String = ""
   var id: String?
   var last4: String?
   var name: String?
@@ -45,13 +46,14 @@ class Source {
     case ERROR = "error"
     case EXP_MONTH = "exp_month"
     case EXP_YEAR = "exp_year"
+    case FINGERPRINT = "fingerprint"
     case ID = "id"
     case LAST4 = "last4"
     case NAME = "name"
   }
   
   init(token: String, address_city: String? = nil, address_country: String? = nil, address_line1: String? = nil, address_line2: String? = nil, address_state: String? = nil, address_zip: String? = nil,
-       brand: String? = nil, country: String? = nil, customer: String? = nil, error: String? = nil, exp_month: Int, exp_year: Int, id: String? = nil, last4: String? = nil, name: String? = nil) {
+       brand: String? = nil, country: String? = nil, customer: String? = nil, error: String? = nil, exp_month: Int, exp_year: Int, fingerprint: String, id: String? = nil, last4: String? = nil, name: String? = nil) {
     self.token = token
     self.address_city = address_city
     self.address_country = address_country
@@ -65,6 +67,7 @@ class Source {
     self.error = error
     self.exp_month = exp_month
     self.exp_year = exp_year
+    self.fingerprint = fingerprint
     self.id = id
     self.last4 = last4
     self.name = name
@@ -86,9 +89,10 @@ class Source {
     let error = dictionary[Keys.ERROR.rawValue] as? String ?? ""
     let exp_month = dictionary[Keys.EXP_MONTH.rawValue] as? Int ?? 1
     let exp_year = dictionary[Keys.EXP_YEAR.rawValue] as? Int ?? 2020
+    let fingerprint = dictionary[Keys.FINGERPRINT.rawValue] as? String ?? ""
     let id = dictionary[Keys.ID.rawValue] as? String ?? ""
     let last4 = dictionary[Keys.LAST4.rawValue] as? String ?? ""
     let name = dictionary[Keys.NAME.rawValue] as? String ?? ""
-    self.init(token: token, address_city: address_city, address_country: address_country, address_line1: address_line1, address_line2: address_line2, address_state: address_state, address_zip: address_zip, brand: brand, country: country, customer: customer, error: error, exp_month: exp_month, exp_year: exp_year, id: id, last4: last4, name: name)
+    self.init(token: token, address_city: address_city, address_country: address_country, address_line1: address_line1, address_line2: address_line2, address_state: address_state, address_zip: address_zip, brand: brand, country: country, customer: customer, error: error, exp_month: exp_month, exp_year: exp_year, fingerprint: fingerprint, id: id, last4: last4, name: name)
   }
 }
