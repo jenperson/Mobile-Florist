@@ -18,7 +18,7 @@ class MakePaymentViewController: UIViewController {
   let sourceDownloader = SourceDownloader()
   var sources = [Source]()
   var selectedSource = 0
-  var price = 202020
+  var price = 15000
   
   // MARK: Outlets
   
@@ -34,8 +34,8 @@ class MakePaymentViewController: UIViewController {
     let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hidePickerView))
     self.view.addGestureRecognizer(tapGestureRecognizer)
     cardButton.tintColor = UIColor.black
-    cardPickerView.delegate = self
-    cardPickerView.dataSource = self
+//    cardPickerView.delegate = self
+//    cardPickerView.dataSource = self
     cardPickerView.isHidden = true
     
     mockPayments()
@@ -85,6 +85,8 @@ class MakePaymentViewController: UIViewController {
         alertController.message = error as! String
       }
       self.navigationController?.present(alertController, animated: true, completion:nil)
+      // re-enable pay button upon completion
+      self.payButton.isEnabled = true
     }
     
     
@@ -96,6 +98,8 @@ class MakePaymentViewController: UIViewController {
 
   
   @IBAction func didTapPayButton(_ sender: Any) {
+    // temporarily disable pay button to prevent double charge
+    payButton.isEnabled = false
     makePayment(price: price)
   }
   
@@ -116,12 +120,12 @@ extension MakePaymentViewController: UIPickerViewDelegate, UIPickerViewDataSourc
   }
   
   func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-    selectedSource = component
+    selectedSource = row
     updateCardButton()
   }
   
   func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-    let source = sources[component]
+    let source = sources[row]
     let brand = source.brand ?? ""
     let last4 = source.last4 ?? "0000"
     let title = "\(brand) \(last4)"

@@ -7,9 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		367FFE7F2151B1E80065B7CB /* PaymentHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 367FFE7E2151B1E80065B7CB /* PaymentHistoryViewController.swift */; };
+		367FFE812151B48D0065B7CB /* PaymentHistoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 367FFE802151B48D0065B7CB /* PaymentHistoryTableViewCell.swift */; };
 		3691AD55212CA2E0006DC888 /* MakePaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3691AD54212CA2E0006DC888 /* MakePaymentViewController.swift */; };
 		3691AD5A212DD759006DC888 /* Charge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3691AD59212DD759006DC888 /* Charge.swift */; };
 		36AC2C50212B772F00C11E60 /* PaymentDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36AC2C4F212B772F00C11E60 /* PaymentDownloader.swift */; };
+		36BBB7FA2159884300D5B3EA /* Goat.001.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 36BBB7F92159884300D5B3EA /* Goat.001.jpeg */; };
 		36BCDFB22122387100B0BE54 /* AuthHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB12122387100B0BE54 /* AuthHandler.swift */; };
 		36BCDFB42124C27C00B0BE54 /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB32124C27C00B0BE54 /* Source.swift */; };
 		36BCDFB62127392300B0BE54 /* SourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */; };
@@ -25,9 +28,12 @@
 
 /* Begin PBXFileReference section */
 		34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GoatLandscaping.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		367FFE7E2151B1E80065B7CB /* PaymentHistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentHistoryViewController.swift; sourceTree = "<group>"; };
+		367FFE802151B48D0065B7CB /* PaymentHistoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentHistoryTableViewCell.swift; sourceTree = "<group>"; };
 		3691AD54212CA2E0006DC888 /* MakePaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakePaymentViewController.swift; sourceTree = "<group>"; };
 		3691AD59212DD759006DC888 /* Charge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charge.swift; sourceTree = "<group>"; };
 		36AC2C4F212B772F00C11E60 /* PaymentDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentDownloader.swift; sourceTree = "<group>"; };
+		36BBB7F92159884300D5B3EA /* Goat.001.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Goat.001.jpeg; sourceTree = "<group>"; };
 		36BCDFB12122387100B0BE54 /* AuthHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHandler.swift; sourceTree = "<group>"; };
 		36BCDFB32124C27C00B0BE54 /* Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
 		36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceTableViewCell.swift; sourceTree = "<group>"; };
@@ -56,11 +62,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		367FFE822151B4930065B7CB /* TableViewCells */ = {
+			isa = PBXGroup;
+			children = (
+				36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */,
+				367FFE802151B48D0065B7CB /* PaymentHistoryTableViewCell.swift */,
+			);
+			path = TableViewCells;
+			sourceTree = "<group>";
+		};
 		3691AD56212CA4F6006DC888 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
 				36E04BE22122204D006740F1 /* SourceViewController.swift */,
 				3691AD54212CA2E0006DC888 /* MakePaymentViewController.swift */,
+				367FFE7E2151B1E80065B7CB /* PaymentHistoryViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -110,8 +126,9 @@
 				3691AD57212CA510006DC888 /* Objects */,
 				36E04BE42122204D006740F1 /* Main.storyboard */,
 				3691AD56212CA4F6006DC888 /* ViewControllers */,
-				36BCDFB52127392300B0BE54 /* SourceTableViewCell.swift */,
+				367FFE822151B4930065B7CB /* TableViewCells */,
 				36E04BE721222050006740F1 /* Assets.xcassets */,
+				36BBB7F92159884300D5B3EA /* Goat.001.jpeg */,
 				36E04BE921222050006740F1 /* LaunchScreen.storyboard */,
 				36E04BF221222081006740F1 /* GoogleService-Info.plist */,
 				36E04BEC21222050006740F1 /* Info.plist */,
@@ -198,6 +215,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				36E04BEB21222050006740F1 /* LaunchScreen.storyboard in Resources */,
+				36BBB7FA2159884300D5B3EA /* Goat.001.jpeg in Resources */,
 				36E04BF321222081006740F1 /* GoogleService-Info.plist in Resources */,
 				36E04BE821222050006740F1 /* Assets.xcassets in Resources */,
 				36E04BE62122204D006740F1 /* Main.storyboard in Resources */,
@@ -296,6 +314,8 @@
 			files = (
 				36BCDFB22122387100B0BE54 /* AuthHandler.swift in Sources */,
 				36E3EBD8212231DF00FFCB4A /* SourceDownloader.swift in Sources */,
+				367FFE7F2151B1E80065B7CB /* PaymentHistoryViewController.swift in Sources */,
+				367FFE812151B48D0065B7CB /* PaymentHistoryTableViewCell.swift in Sources */,
 				36BCDFB62127392300B0BE54 /* SourceTableViewCell.swift in Sources */,
 				36AC2C50212B772F00C11E60 /* PaymentDownloader.swift in Sources */,
 				36E04BE32122204D006740F1 /* SourceViewController.swift in Sources */,

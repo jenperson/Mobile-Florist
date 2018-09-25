@@ -27,7 +27,7 @@ class PaymentDownloader {
       completion(charges, error)
       return
     }
-    db.collection("stripe_customers").document(uid).collection("charges")
+    db.collection("stripe_customers").document(uid).collection("charges").whereField("paid", isEqualTo: true)
       .addSnapshotListener(includeMetadataChanges: true)
       { (querySnapshot, err) in
         charges = []
@@ -54,7 +54,7 @@ func makePayment(source: String?, charge: Int, completion: @escaping (Error?)->V
     completion(error)
     return
   }
-  var data: [String: AnyObject] = ["amount": charge as AnyObject]
+  var data: [String: AnyObject] = ["amount": charge as AnyObject, "date": Date() as AnyObject]
   if let source = source {
     data["source"] = source as AnyObject
   }
