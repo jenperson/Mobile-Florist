@@ -57,35 +57,34 @@ exports.createStripeCustomer = functions.auth.user().onCreate(async (user) => {
   return admin.firestore().collection('stripe_customers').doc(user.uid).set({customer_id: customer.id});
 });
 
-// TODO(sgoldblatt): add these into transactions. Consider if they should be two different DBs
-exports.refundCharge = functions.firestore.document('pending_stripe_requests/{id}').onWrite(async (change, context) => {
+
+exports.refundCharge = functions.firestore.document('pending_stripe_requests/{refundId}').onWrite(async (change, context) => {
   const refund = change.after.data();
 
-  // if this were a different db this wouldn't be necessary or could be checked in rules
   if (!refund.approverId) {
     console.log("refund could not be processed. No approver specified")
+    return
   }
 
   // this is also checked in the rules!
   const approver = await admin.firestore().collection('stripe_customers').doc(refund.approverId).get();
   if (!approver.data().isAdminUser) {
     console.log("Approver is not an admin")
+    return
   }
 
   let response = null;
-  // wrap this in a try catch b/c what if this call fails due to stripe issues....
   try {
     response = await stripe.refunds.create({charge: refund.chargeId})
   } catch (error) {
     change.after.ref.collection('errors').doc().set({error: error.toString(), erroredAt: Date.now()});
-    return; 
+    return reportError(error, { chargeId: refund.chargeId}); 
   }
   
-  // would be nice to get a CONST here instead of the string check
   if (response.status === "succeeded") {
-    const val = await change.after.ref.set({refundedAt: Date.now(), response}, {merge: true})
-    const val1 = await admin.firestore().collection('refund_requests').doc(refund.id).update({closedAt: Date.now()});
-    const val2 = await admin.firestore().collection('stripe_customers').doc(refund.userId).collection('charges').update({refundedAt: Date.now()});
+    const val = await change.after.ref.update({refundedAt: Date.now(), response}, {merge: true})
+    const val1 = await admin.firestore().collection('refund_requests').doc(context.params.refundId).update({closedAt: Date.now()});
+    const val2 = await admin.firestore().collection('stripe_customers').doc(refund.userId).collection('charges').doc(context.params.refundId).update({refundedAt: Date.now()});
     return {val, val1, val2};
   } else {
     change.after.ref.set({attempedAt: Date.now(), response}, {merge: true})
