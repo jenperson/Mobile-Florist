@@ -1,0 +1,6 @@
+framework module Pods_MobileFlorist {
+  umbrella header "Pods-MobileFlorist-umbrella.h"
+
+  export *
+  module * { export * }
+}
