@@ -15,8 +15,8 @@
 *.DS_Store
 *.firebase
 *.firebaserc
-*.GoogleService-Info.plist
-*.GoogleServices.json
+GoogleService-Info.plist
+GoogleServices.json
 
 # Cloud Functions
 node_modules/
