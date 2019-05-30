@@ -17,10 +17,12 @@
 #ifndef FIRESTORE_CORE_SRC_FIREBASE_FIRESTORE_UTIL_STRING_APPLE_H_
 #define FIRESTORE_CORE_SRC_FIREBASE_FIRESTORE_UTIL_STRING_APPLE_H_
 
-// Everything in this header exists for compatibility with Objective-C.
-#if __OBJC__
+#if defined(__APPLE__)
+#import <CoreFoundation/CoreFoundation.h>
 
+#if defined(__OBJC__)
 #import <Foundation/Foundation.h>
+#endif
 
 #include <string>
 
@@ -30,18 +32,31 @@ namespace firebase {
 namespace firestore {
 namespace util {
 
+/**
+ * Returns a copy of the given CFString (or NSString) encoded in UTF-8.
+ */
+std::string MakeString(CFStringRef str);
+
+inline CFStringRef MakeCFString(absl::string_view contents) {
+  auto bytes = reinterpret_cast<const UInt8*>(contents.data());
+  return CFStringCreateWithBytes(kCFAllocatorDefault, bytes, contents.size(),
+                                 kCFStringEncodingUTF8, false);
+}
+
+#if defined(__OBJC__)
+
 // Translates a C string to the equivalent NSString without making a copy.
-inline NSString* WrapNSStringNoCopy(const char* c_str) {
+inline NSString* WrapNSStringNoCopy(const char* c_str, size_t size) {
   return [[NSString alloc]
       initWithBytesNoCopy:const_cast<void*>(static_cast<const void*>(c_str))
-                   length:strlen(c_str)
+                   length:size
                  encoding:NSUTF8StringEncoding
-             freeWhenDone:NO];
+             freeWhenDone:false];
 }
 
 // Translates a string_view to the equivalent NSString without making a copy.
 inline NSString* WrapNSStringNoCopy(const absl::string_view str) {
-  return WrapNSStringNoCopy(str.data());
+  return WrapNSStringNoCopy(str.data(), str.size());
 }
 
 // Translates a string_view string to the equivalent NSString by making a copy.
@@ -61,14 +76,15 @@ inline absl::string_view MakeStringView(NSString* str) {
 
 // Creates a std::string wrapper for the contents of the given NSString.
 inline std::string MakeString(NSString* str) {
-  return std::string([str UTF8String],
-                     [str lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
+  CFStringRef cf_str = (__bridge CFStringRef)str;
+  return MakeString(cf_str);
 }
+
+#endif  // defined(__OBJC__)
 
 }  // namespace util
 }  // namespace firestore
 }  // namespace firebase
 
-#endif  // __OBJC__
-
+#endif  // defined(__APPLE__)
 #endif  // FIRESTORE_CORE_SRC_FIREBASE_FIRESTORE_UTIL_STRING_APPLE_H_

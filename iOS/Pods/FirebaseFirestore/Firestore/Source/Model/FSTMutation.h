@@ -35,6 +35,8 @@
 @class FSTObjectValue;
 @class FIRTimestamp;
 
+namespace model = firebase::firestore::model;
+
 NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - FSTMutationResult
@@ -42,12 +44,21 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FSTMutationResult : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithVersion:(absl::optional<firebase::firestore::model::SnapshotVersion>)version
+- (instancetype)initWithVersion:(model::SnapshotVersion)version
                transformResults:(NSArray<FSTFieldValue *> *_Nullable)transformResults
     NS_DESIGNATED_INITIALIZER;
 
-/** The version at which the mutation was committed or null for a delete. */
-- (const absl::optional<firebase::firestore::model::SnapshotVersion> &)version;
+/**
+ * The version at which the mutation was committed.
+ *
+ * - For most operations, this is the updateTime in the WriteResult.
+ * - For deletes, it is the commitTime of the WriteResponse (because deletes are not stored
+ * and have no updateTime).
+ *
+ * Note that these versions can be different: No-op writes will not change the updateTime even
+ * though the commitTime advances.
+ */
+- (const model::SnapshotVersion &)version;
 
 /**
  * The resulting fields returned from the backend after a FSTTransformMutation has been committed.
@@ -62,46 +73,21 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - FSTMutation
 
 /**
- * A mutation describes a self-contained change to a document. Mutations can create, replace,
- * delete, and update subsets of documents.
+ * Represents a Mutation of a document. Different subclasses of Mutation will perform different
+ * kinds of changes to a base document. For example, an FSTSetMutation replaces the value of a
+ * document and an FSTDeleteMutation deletes a document.
  *
- * ## Subclassing Notes
+ * Subclasses of FSTMutation need to implement `applyToRemoteDocument:mutationResult:` and
+ * `applyToLocalDocument:baseDocument:localWriteTime:` to implement the actual the behavior of
+ * mutations as applied to some source document.
  *
- * Subclasses of FSTMutation need to implement -applyTo:hasLocalMutations: to implement the
- * actual the behavior of mutation as applied to some source document.
- */
-@interface FSTMutation : NSObject
-
-- (id)init NS_UNAVAILABLE;
-
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
-               precondition:(firebase::firestore::model::Precondition)precondition
-    NS_DESIGNATED_INITIALIZER;
-
-/**
- * Applies this mutation to the given FSTDocument, FSTDeletedDocument or nil, if we don't have
- * information about this document. Both the input and returned documents can be nil.
- *
- * @param maybeDoc The current state of the document to mutate. The input document should be nil if
- * it does not currently exist.
- * @param baseDoc The state of the document prior to this mutation batch. The input document should
- * be nil if it the document did not exist.
- * @param localWriteTime A timestamp indicating the local write time of the batch this mutation is
- * a part of.
- * @param mutationResult Optional result info from the backend. If omitted, it's assumed that
- * this is merely a local (latency-compensated) application, and the resulting document will
- * have its hasLocalMutations flag set.
- *
- * @return The mutated document. The returned document may be nil, but only if maybeDoc was nil
- * and the mutation would not create a new document.
- *
- * NOTE: We preserve the version of the base document only in case of Set or Patch mutation to
- * denote what version of original document we've changed. In case of DeleteMutation we always reset
- * the version.
+ * In addition to the value of the document mutations also operate on the version. For local
+ * mutations (mutations that haven't been committed yet), we preserve the existing version for Set,
+ * Patch, and Transform mutations. For local deletes, we reset the version to 0.
  *
  * Here's the expected transition table.
  *
- * MUTATION         APPLIED TO            RESULTS IN
+ * MUTATION           APPLIED TO            RESULTS IN
  *
  * SetMutation        Document(v3)          Document(v3)
  * SetMutation        DeletedDocument(v3)   Document(v0)
@@ -116,28 +102,70 @@ NS_ASSUME_NONNULL_BEGIN
  * DeleteMutation     DeletedDocument(v3)   DeletedDocument(v0)
  * DeleteMutation     nil                   DeletedDocument(v0)
  *
- * Note that FSTTransformMutations don't create FSTDocuments (in the case of being applied to an
+ * For acknowledged mutations, we use the updateTime of the WriteResponse as the resulting version
+ * for Set, Patch, and Transform mutations. As deletes have no explicit update time, we use the
+ * commitTime of the WriteResponse for acknowledged deletes.
+ *
+ * If a mutation is acknowledged by the backend but fails the precondition check locally, we
+ * return an `FSTUnknownDocument` and rely on Watch to send us the updated version.
+ *
+ * Note that FSTTransformMutations don't create Documents (in the case of being applied to an
  * FSTDeletedDocument), even though they would on the backend. This is because the client always
- * combines the FSTTransformMutation with a FSTSetMutation or FSTPatchMutation and we only want to
+ * combines the FSTTransformMutations with a FSTSetMutation or FSTPatchMutation and we only want to
  * apply the transform if the prior mutation resulted in an FSTDocument (always true for an
  * FSTSetMutation, but not necessarily for an FSTPatchMutation).
  */
-- (nullable FSTMaybeDocument *)applyTo:(nullable FSTMaybeDocument *)maybeDoc
-                          baseDocument:(nullable FSTMaybeDocument *)baseDoc
-                        localWriteTime:(FIRTimestamp *)localWriteTime
-                        mutationResult:(nullable FSTMutationResult *)mutationResult;
+@interface FSTMutation : NSObject
+
+- (id)init NS_UNAVAILABLE;
+
+- (instancetype)initWithKey:(model::DocumentKey)key
+               precondition:(model::Precondition)precondition NS_DESIGNATED_INITIALIZER;
 
 /**
- * A helper version of applyTo for applying mutations locally (without a mutation result from the
- * backend).
+ * Applies this mutation to the given FSTMaybeDocument for the purposes of computing a new remote
+ * document. If the input document doesn't match the expected state (e.g. it is nil or outdated),
+ * an `FSTUnknownDocument` can be returned.
+ *
+ * @param maybeDoc The document to mutate. The input document can be nil if the client has no
+ *     knowledge of the pre-mutation state of the document.
+ * @param mutationResult The result of applying the mutation from the backend.
+ * @return The mutated document. The returned document may be an FSTUnknownDocument if the mutation
+ *     could not be applied to the locally cached base document.
  */
-- (nullable FSTMaybeDocument *)applyTo:(nullable FSTMaybeDocument *)maybeDoc
-                          baseDocument:(nullable FSTMaybeDocument *)baseDoc
-                        localWriteTime:(nullable FIRTimestamp *)localWriteTime;
+- (FSTMaybeDocument *)applyToRemoteDocument:(nullable FSTMaybeDocument *)maybeDoc
+                             mutationResult:(FSTMutationResult *)mutationResult;
 
-- (const firebase::firestore::model::DocumentKey &)key;
+/**
+ * Applies this mutation to the given FSTMaybeDocument for the purposes of computing the new local
+ * view of a document. Both the input and returned documents can be nil.
+ *
+ * @param maybeDoc The document to mutate. The input document can be nil if the client has no
+ * knowledge of the pre-mutation state of the document.
+ * @param baseDoc The state of the document prior to this mutation batch. The input document can
+ * be nil if the client has no knowledge of the pre-mutation state of the document.
+ * @param localWriteTime A timestamp indicating the local write time of the batch this mutation is
+ * a part of.
+ * @return The mutated document. The returned document may be nil, but only if maybeDoc was nil
+ * and the mutation would not create a new document.
+ */
+- (nullable FSTMaybeDocument *)applyToLocalDocument:(nullable FSTMaybeDocument *)maybeDoc
+                                       baseDocument:(nullable FSTMaybeDocument *)baseDoc
+                                     localWriteTime:(FIRTimestamp *)localWriteTime;
 
-- (const firebase::firestore::model::Precondition &)precondition;
+- (const model::DocumentKey &)key;
+
+- (const model::Precondition &)precondition;
+
+/**
+ * If applicable, returns the field mask for this mutation. Fields that are not included in this
+ * field mask are not modified when this mutation is applied. Mutations that replace all document
+ * values return 'nullptr'.
+ */
+- (const model::FieldMask *)fieldMask;
+
+/** Returns whether all operations in the mutation are idempotent. */
+@property(nonatomic, readonly) BOOL idempotent;
 
 @end
 
@@ -149,8 +177,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface FSTSetMutation : FSTMutation
 
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
-               precondition:(firebase::firestore::model::Precondition)precondition NS_UNAVAILABLE;
+- (instancetype)initWithKey:(model::DocumentKey)key
+               precondition:(model::Precondition)precondition NS_UNAVAILABLE;
 
 /**
  * Initializes the set mutation.
@@ -160,10 +188,9 @@ NS_ASSUME_NONNULL_BEGIN
  * key.
  * @param precondition The precondition for this mutation.
  */
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
+- (instancetype)initWithKey:(model::DocumentKey)key
                       value:(FSTObjectValue *)value
-               precondition:(firebase::firestore::model::Precondition)precondition
-    NS_DESIGNATED_INITIALIZER;
+               precondition:(model::Precondition)precondition NS_DESIGNATED_INITIALIZER;
 
 /** The object value to use when setting the document. */
 @property(nonatomic, strong, readonly) FSTObjectValue *value;
@@ -183,8 +210,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FSTPatchMutation : FSTMutation
 
 /** Returns the precondition for the given Precondition. */
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
-               precondition:(firebase::firestore::model::Precondition)precondition NS_UNAVAILABLE;
+- (instancetype)initWithKey:(model::DocumentKey)key
+               precondition:(model::Precondition)precondition NS_UNAVAILABLE;
 
 /**
  * Initializes a new patch mutation with an explicit FieldMask and FSTObjectValue representing
@@ -197,17 +224,16 @@ NS_ASSUME_NONNULL_BEGIN
  * to determine the locations at which it should be applied).
  * @param precondition The precondition for this mutation.
  */
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
-                  fieldMask:(firebase::firestore::model::FieldMask)fieldMask
+- (instancetype)initWithKey:(model::DocumentKey)key
+                  fieldMask:(model::FieldMask)fieldMask
                       value:(FSTObjectValue *)value
-               precondition:(firebase::firestore::model::Precondition)precondition
-    NS_DESIGNATED_INITIALIZER;
+               precondition:(model::Precondition)precondition NS_DESIGNATED_INITIALIZER;
 
 /**
  * A mask to apply to |value|, where only fields that are in both the fieldMask and the value
  * will be updated.
  */
-- (const firebase::firestore::model::FieldMask &)fieldMask;
+- (const model::FieldMask *)fieldMask;
 
 /** The fields and associated values to use when patching the document. */
 @property(nonatomic, strong, readonly) FSTObjectValue *value;
@@ -227,8 +253,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface FSTTransformMutation : FSTMutation
 
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
-               precondition:(firebase::firestore::model::Precondition)precondition NS_UNAVAILABLE;
+- (instancetype)initWithKey:(model::DocumentKey)key
+               precondition:(model::Precondition)precondition NS_UNAVAILABLE;
 
 /**
  * Initializes a new transform mutation with the specified field transforms.
@@ -236,12 +262,12 @@ NS_ASSUME_NONNULL_BEGIN
  * @param key Identifies the location of the document to mutate.
  * @param fieldTransforms A list of FieldTransform objects to perform to the document.
  */
-- (instancetype)initWithKey:(firebase::firestore::model::DocumentKey)key
-            fieldTransforms:(std::vector<firebase::firestore::model::FieldTransform>)fieldTransforms
+- (instancetype)initWithKey:(model::DocumentKey)key
+            fieldTransforms:(std::vector<model::FieldTransform>)fieldTransforms
     NS_DESIGNATED_INITIALIZER;
 
 /** The field transforms to use when transforming the document. */
-- (const std::vector<firebase::firestore::model::FieldTransform> &)fieldTransforms;
+- (const std::vector<model::FieldTransform> &)fieldTransforms;
 
 @end
 

@@ -45,7 +45,8 @@ class Charge {
     let outcome = dictionary[Keys.OUTCOME.rawValue] as? [String: Any] ?? [String: Any]()
     let recipient = dictionary[Keys.RECIPIENT.rawValue] as? String ?? "My Best Friend"
     let paid = outcome[Keys.PAID.rawValue] as? Bool ?? true
-    let date = dictionary[Keys.DATE.rawValue] as? Date
+    let timestamp = dictionary[Keys.DATE.rawValue] as? Timestamp
+    let date = timestamp?.dateValue()
     let id = dictionary[Keys.ID.rawValue] as? String ?? ""
     let customer = dictionary[Keys.CUSTOMER.rawValue] as? String ?? ""
     let refunded = dictionary[Keys.REFUNDED.rawValue] as? Bool ?? false

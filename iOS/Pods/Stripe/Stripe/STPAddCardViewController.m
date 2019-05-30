@@ -13,6 +13,7 @@
 #import "STPAddressViewModel.h"
 #import "STPAnalyticsClient.h"
 #import "STPCardIOProxy.h"
+#import "STPCardValidator.h"
 #import "STPColorUtils.h"
 #import "STPCoreTableViewController+Private.h"
 #import "STPDispatchFunctions.h"
@@ -48,6 +49,8 @@
     UITableViewDelegate,
     UITableViewDataSource>
 
+@property (nonatomic) BOOL alwaysShowScanCardButton;
+@property (nonatomic) BOOL alwaysEnableDoneButton;
 @property (nonatomic) STPPaymentConfiguration *configuration;
 @property (nonatomic) STPAddress *shippingAddress;
 @property (nonatomic) BOOL hasUsedShippingAddress;
@@ -104,7 +107,10 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
     UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(nextPressed:)];
     self.doneItem = doneItem;
     self.stp_navigationItemProxy.rightBarButtonItem = doneItem;
-    self.stp_navigationItemProxy.rightBarButtonItem.enabled = NO;
+    [self updateDoneButton];
+
+    self.stp_navigationItemProxy.leftBarButtonItem.accessibilityIdentifier = @"AddCardViewControllerNavBarCancelButtonIdentifier";
+    self.stp_navigationItemProxy.rightBarButtonItem.accessibilityIdentifier = @"AddCardViewControllerNavBarDoneButtonIdentifier";
     
     UIImageView *cardImageView = [[UIImageView alloc] initWithImage:[STPImageLibrary largeCardFrontImage]];
     cardImageView.contentMode = UIViewContentModeCenter;
@@ -115,10 +121,6 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
     STPPaymentCardTextFieldCell *paymentCell = [[STPPaymentCardTextFieldCell alloc] init];
     paymentCell.paymentField.delegate = self;
     self.paymentCell = paymentCell;
-
-    if (self.prefilledInformation.billingAddress != nil) {
-        self.addressViewModel.address = self.prefilledInformation.billingAddress;
-    }
     
     self.activityIndicator = [[STPPaymentActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 20.0f, 20.0f)];
     
@@ -127,6 +129,10 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
     [self updateInputAccessoryVisiblity];
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
+
+    if (self.prefilledInformation.billingAddress != nil) {
+        self.addressViewModel.address = self.prefilledInformation.billingAddress;
+    }
 
     STPSectionHeaderView *addressHeaderView = [STPSectionHeaderView new];
     addressHeaderView.theme = self.theme;
@@ -176,12 +182,19 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
 }
 
 - (void)setUpCardScanningIfAvailable {
-    if ([STPCardIOProxy isCardIOAvailable]) {
+    if ([STPCardIOProxy isCardIOAvailable] || self.alwaysShowScanCardButton) {
         self.cardIOProxy = [[STPCardIOProxy alloc] initWithDelegate:self];
         self.cardHeaderView.buttonHidden = NO;
         [self.cardHeaderView.button setTitle:STPLocalizedString(@"Scan Card", @"Text for button to scan a credit card") forState:UIControlStateNormal];
         [self.cardHeaderView.button addTarget:self action:@selector(presentCardIO) forControlEvents:UIControlEventTouchUpInside];
         [self.cardHeaderView setNeedsLayout];
+    }
+}
+
+- (void)setAlwaysEnableDoneButton:(BOOL)alwaysEnableDoneButton {
+    if (alwaysEnableDoneButton != _alwaysEnableDoneButton) {
+        _alwaysEnableDoneButton = alwaysEnableDoneButton;
+        [self updateDoneButton];
     }
 }
 
@@ -345,7 +358,7 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
 - (void)updateDoneButton {
     self.stp_navigationItemProxy.rightBarButtonItem.enabled = (self.paymentCell.paymentField.isValid
                                                                && self.addressViewModel.isValid
-                                                               );
+                                                               ) || self.alwaysEnableDoneButton;
 }
 
 - (void)updateInputAccessoryVisiblity {
@@ -377,19 +390,39 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
     [[self.addressViewModel.addressCells stp_boundSafeObjectAtIndex:0] becomeFirstResponder];
 }
 
-- (void)paymentCardTextFieldDidBeginEditingCVC:(__unused STPPaymentCardTextField *)textField {
+- (void)paymentCardTextFieldWillEndEditingForReturn:(__unused STPPaymentCardTextField *)textField {
+    [self paymentFieldNextTapped];
+}
+
+- (void)paymentCardTextFieldDidBeginEditingCVC:(STPPaymentCardTextField *)textField {
+    BOOL isAmex = [STPCardValidator brandForNumber:textField.cardNumber] == STPCardBrandAmex;
+    UIImage *newImage;
+    UIViewAnimationOptions animationTransition;
+
+    if (isAmex) {
+        newImage = [STPImageLibrary largeCardAmexCVCImage];
+        animationTransition = UIViewAnimationOptionTransitionCrossDissolve;
+    }
+    else {
+        newImage = [STPImageLibrary largeCardBackImage];
+        animationTransition = UIViewAnimationOptionTransitionFlipFromRight;
+    }
+
     [UIView transitionWithView:self.cardImageView
                       duration:0.2
-                       options:UIViewAnimationOptionTransitionFlipFromRight
+                       options:animationTransition
                     animations:^{
-                        self.cardImageView.image = [STPImageLibrary largeCardBackImage];
+                        self.cardImageView.image = newImage;
                     } completion:nil];
 }
 
-- (void)paymentCardTextFieldDidEndEditingCVC:(__unused STPPaymentCardTextField *)textField {
+- (void)paymentCardTextFieldDidEndEditingCVC:(STPPaymentCardTextField *)textField {
+    BOOL isAmex = [STPCardValidator brandForNumber:textField.cardNumber] == STPCardBrandAmex;
+    UIViewAnimationOptions animationTransition = isAmex ? UIViewAnimationOptionTransitionCrossDissolve : UIViewAnimationOptionTransitionFlipFromLeft;
+
     [UIView transitionWithView:self.cardImageView
                       duration:0.2
-                       options:UIViewAnimationOptionTransitionFlipFromLeft
+                       options:animationTransition
                     animations:^{
                         self.cardImageView.image = [STPImageLibrary largeCardFrontImage];
                     } completion:nil];
@@ -398,14 +431,20 @@ typedef NS_ENUM(NSUInteger, STPPaymentCardSection) {
 #pragma mark - STPAddressViewModelDelegate
 
 - (void)addressViewModel:(__unused STPAddressViewModel *)addressViewModel addedCellAtIndex:(NSUInteger)index {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:STPPaymentCardBillingAddressSection];
-    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSInteger rowsInSection = [self.tableView numberOfRowsInSection:STPPaymentCardBillingAddressSection];
+    if (rowsInSection != NSNotFound && rowsInSection < [self tableView:self.tableView numberOfRowsInSection:STPPaymentCardBillingAddressSection]) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:STPPaymentCardBillingAddressSection];
+        [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
     [self updateInputAccessoryVisiblity];
 }
 
 - (void)addressViewModel:(__unused STPAddressViewModel *)addressViewModel removedCellAtIndex:(NSUInteger)index {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:STPPaymentCardBillingAddressSection];
-    [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSInteger rowsInSection = [self.tableView numberOfRowsInSection:STPPaymentCardBillingAddressSection];
+    if (rowsInSection != NSNotFound && index < (NSUInteger)rowsInSection) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:STPPaymentCardBillingAddressSection];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
     [self updateInputAccessoryVisiblity];
 }
 

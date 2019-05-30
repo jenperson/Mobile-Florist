@@ -30,11 +30,9 @@
 		36E04BF321222081006740F1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 36E04BF221222081006740F1 /* GoogleService-Info.plist */; };
 		36E3EBD8212231DF00FFCB4A /* SourceDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E3EBD7212231DF00FFCB4A /* SourceDownloader.swift */; };
 		8E058C26B0FC60D6B9053BBC /* Pods_MobileFlorist.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFE676DB1E10E382073FDE0A /* Pods_MobileFlorist.framework */; };
-		9FD8454BD09553018959D874 /* Pods_GoatLandscaping.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GoatLandscaping.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3626CFEE2238311500F5C1F3 /* Flowers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Flowers.png; sourceTree = "<group>"; };
 		3626CFF0223841C300F5C1F3 /* Flowers_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Flowers_1.png; sourceTree = "<group>"; };
 		3626CFF2223841CA00F5C1F3 /* Flowers_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Flowers_2.png; sourceTree = "<group>"; };
@@ -71,7 +69,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9FD8454BD09553018959D874 /* Pods_GoatLandscaping.framework in Frameworks */,
 				8E058C26B0FC60D6B9053BBC /* Pods_MobileFlorist.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -162,7 +159,6 @@
 		B0467B7516E62EA01B82FB1A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				34CF946C15332AFA93D55197 /* Pods_GoatLandscaping.framework */,
 				DFE676DB1E10E382073FDE0A /* Pods_MobileFlorist.framework */,
 			);
 			name = Frameworks;
@@ -261,31 +257,27 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MobileFlorist/Pods-MobileFlorist-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/BoringSSL/openssl.framework",
-				"${BUILT_PRODUCTS_DIR}/GTMOAuth2/GTMOAuth2.framework",
+				"${BUILT_PRODUCTS_DIR}/BoringSSL-GRPC/openssl_grpc.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
 				"${BUILT_PRODUCTS_DIR}/Stripe/Stripe.framework",
-				"${BUILT_PRODUCTS_DIR}/gRPC/GRPCClient.framework",
+				"${BUILT_PRODUCTS_DIR}/gRPC-C++/grpcpp.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-Core/grpc.framework",
-				"${BUILT_PRODUCTS_DIR}/gRPC-ProtoRPC/ProtoRPC.framework",
-				"${BUILT_PRODUCTS_DIR}/gRPC-RxLibrary/RxLibrary.framework",
 				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMOAuth2.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl_grpc.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stripe.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GRPCClient.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpcpp.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpc.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ProtoRPC.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxLibrary.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);

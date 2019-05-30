@@ -16,21 +16,11 @@
 
 #import <Foundation/Foundation.h>
 
-#include "Firestore/core/src/firebase/firestore/model/types.h"
-
-NS_ASSUME_NONNULL_BEGIN
+#include <memory>
 
 @class FSTMaybeDocument;
-@class FSTTransaction;
 
-/** FSTBatchID is a locally assigned ID for a batch of mutations that have been applied. */
-typedef firebase::firestore::model::BatchId FSTBatchID;
-
-typedef firebase::firestore::model::TargetId FSTTargetID;
-
-typedef int64_t FSTListenSequenceNumber;
-
-typedef NSNumber FSTBoxedTargetID;
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * FSTVoidBlock is a block that's called when a specific event happens but that otherwise has
@@ -45,9 +35,6 @@ typedef void (^FSTVoidBlock)(void);
  */
 typedef void (^FSTVoidErrorBlock)(NSError *_Nullable error);
 
-/** FSTVoidIDErrorBlock is a block that takes an optional value and error. */
-typedef void (^FSTVoidIDErrorBlock)(id _Nullable, NSError *_Nullable);
-
 /**
  * FSTVoidMaybeDocumentErrorBlock is a block that gets either a list of documents or an error.
  *
@@ -56,45 +43,5 @@ typedef void (^FSTVoidIDErrorBlock)(id _Nullable, NSError *_Nullable);
  */
 typedef void (^FSTVoidMaybeDocumentArrayErrorBlock)(
     NSArray<FSTMaybeDocument *> *_Nullable documents, NSError *_Nullable error);
-
-/**
- * FSTTransactionBlock is a block that wraps a user's transaction update block internally.
- *
- * @param transaction An object with methods for performing reads and writes within the
- *                    transaction.
- * @param completion To be called by the block once the user's code is finished.
- */
-typedef void (^FSTTransactionBlock)(FSTTransaction *transaction,
-                                    void (^completion)(id _Nullable, NSError *_Nullable));
-
-/**
- * Describes the online state of the Firestore client. Note that this does not indicate whether
- * or not the remote store is trying to connect or not. This is primarily used by the View /
- * EventManager code to change their behavior while offline (e.g. get() calls shouldn't wait for
- * data from the server and snapshot events should set metadata.isFromCache=true).
- */
-typedef NS_ENUM(NSUInteger, FSTOnlineState) {
-  /**
-   * The Firestore client is in an unknown online state. This means the client is either not
-   * actively trying to establish a connection or it is currently trying to establish a connection,
-   * but it has not succeeded or failed yet. Higher-level components should not operate in
-   * offline mode.
-   */
-  FSTOnlineStateUnknown,
-
-  /**
-   * The client is connected and the connections are healthy. This state is reached after a
-   * successful connection and there has been at least one successful message received from the
-   * backends.
-   */
-  FSTOnlineStateOnline,
-
-  /**
-   * The client is either trying to establish a connection but failing, or it has been explicitly
-   * marked offline via a call to `disableNetwork`. Higher-level components should operate in
-   * offline mode.
-   */
-  FSTOnlineStateOffline
-};
 
 NS_ASSUME_NONNULL_END

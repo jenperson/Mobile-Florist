@@ -15,8 +15,8 @@
 
 #import "FUNContext.h"
 
-#import "FIRApp.h"
-#import "FIRAppInternal.h"
+#import <FirebaseAuthInterop/FIRAuthInterop.h>
+
 #import "FUNInstanceIDProxy.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,17 +43,17 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FUNContextProvider () {
-  FIRApp *_app;
+  id<FIRAuthInterop> _auth;
   FUNInstanceIDProxy *_instanceIDProxy;
 }
 @end
 
 @implementation FUNContextProvider
 
-- (instancetype)initWithApp:(FIRApp *)app {
+- (instancetype)initWithAuth:(nullable id<FIRAuthInterop>)auth {
   self = [super init];
   if (self) {
-    _app = app;
+    _auth = auth;
     _instanceIDProxy = [[FUNInstanceIDProxy alloc] init];
   }
   return self;
@@ -65,21 +65,31 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)getContext:(void (^)(FUNContext *_Nullable context, NSError *_Nullable error))completion {
-  // Get the auth token.
-  [_app getTokenForcingRefresh:NO
-                  withCallback:^(NSString *_Nullable token, NSError *_Nullable error) {
-                    if (error) {
-                      completion(nil, error);
-                      return;
-                    }
+  // If auth isn't included, call the completion handler and return.
+  if (_auth == nil) {
+    // With no auth, just populate instanceIDToken and call the completion handler.
+    NSString *instanceIDToken = [self instanceIDToken];
+    FUNContext *context = [[FUNContext alloc] initWithAuthToken:nil
+                                                instanceIDToken:instanceIDToken];
+    completion(context, nil);
+    return;
+  }
 
-                    // Get the instance id token.
-                    NSString *_Nullable instanceIDToken = [self instanceIDToken];
+  // Auth exists, get the auth token.
+  [_auth getTokenForcingRefresh:NO
+                   withCallback:^(NSString *_Nullable token, NSError *_Nullable error) {
+                     if (error) {
+                       completion(nil, error);
+                       return;
+                     }
 
-                    FUNContext *context = [[FUNContext alloc] initWithAuthToken:token
-                                                                instanceIDToken:instanceIDToken];
-                    completion(context, nil);
-                  }];
+                     // Get the instance id token.
+                     NSString *_Nullable instanceIDToken = [self instanceIDToken];
+
+                     FUNContext *context = [[FUNContext alloc] initWithAuthToken:token
+                                                                 instanceIDToken:instanceIDToken];
+                     completion(context, nil);
+                   }];
 }
 
 @end

@@ -18,10 +18,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The current version of this library.
  */
-static NSString *const STPSDKVersion = @"13.1.0";
+static NSString *const STPSDKVersion = @"15.0.1";
 
 @class STPBankAccount, STPBankAccountParams, STPCard, STPCardParams, STPConnectAccountParams;
-@class STPPaymentConfiguration, STPPaymentIntentParams, STPSourceParams, STPToken;
+@class STPPaymentConfiguration, STPPaymentIntentParams, STPSourceParams, STPToken, STPPaymentMethodParams;
 
 /**
  A top-level class that imports the rest of the Stripe SDK.
@@ -192,6 +192,14 @@ static NSString *const STPSDKVersion = @"13.1.0";
  */
 - (void)createTokenWithCard:(STPCardParams *)card completion:(nullable STPTokenCompletionBlock)completion;
 
+/**
+ Converts a CVC string into a Stripe token using the Stripe API.
+
+ @param cvc         The CVC/CVV number used to create the token. Cannot be nil.
+ @param completion  The callback to run with the returned Stripe token (and any errors that may have occurred).
+ */
+- (void)createTokenForCVCUpdate:(NSString *)cvc completion:(nullable STPTokenCompletionBlock)completion;
+
 @end
 
 /**
@@ -218,6 +226,9 @@ static NSString *const STPSDKVersion = @"13.1.0";
 
  The Stripe supported Apple Pay card networks are:
  American Express, Visa, Mastercard, Discover.
+ 
+ Japanese users can enable JCB by setting `JCBPaymentNetworkSupported` to YES,
+ after they have been approved by JCB.
 
  @return YES if the device is currently able to make Apple Pay payments via one
  of the supported networks. NO if the user does not have a saved card of a
@@ -262,6 +273,13 @@ static NSString *const STPSDKVersion = @"13.1.0";
 + (PKPaymentRequest *)paymentRequestWithMerchantIdentifier:(NSString *)merchantIdentifier
                                                    country:(NSString *)countryCode
                                                   currency:(NSString *)currencyCode;
+
+/**
+ Japanese users can enable JCB for Apple Pay by setting this to `YES`, after they have been approved by JCB.
+ 
+ The default value is NO.
+ */
+@property (class, nonatomic, getter=isJCBPaymentNetworkSupported) BOOL JCBPaymentNetworkSupported;
 
 @end
 
@@ -349,6 +367,27 @@ static NSString *const STPSDKVersion = @"13.1.0";
  */
 - (void)confirmPaymentIntentWithParams:(STPPaymentIntentParams *)paymentIntentParams
                             completion:(STPPaymentIntentCompletionBlock)completion;
+
+@end
+
+
+#pragma mark Payment Methods
+
+/**
+ STPAPIClient extensions for working with PaymentMethod objects.
+ */
+@interface STPAPIClient (PaymentMethods)
+
+/**
+ Creates a PaymentMethod object with the provided params object.
+ 
+ @see https://stripe.com/docs/api/payment_methods/create
+ 
+ @param paymentMethodParams  The `STPPaymentMethodParams` to pass to `/v1/payment_methods`.  Cannot be nil.
+ @param completion           The callback to run with the returned PaymentMethod object, or an error.
+ */
+- (void)createPaymentMethodWithParams:(STPPaymentMethodParams *)paymentMethodParams
+                           completion:(STPPaymentMethodCompletionBlock)completion;
 
 @end
 

@@ -14,10 +14,18 @@
 // limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "FIRError.h"
 
 @class FUNSerializer;
 
 NS_ASSUME_NONNULL_BEGIN
+
+/**
+ * Takes an error code and returns a corresponding NSError.
+ * @param code The eror code.
+ * @return The corresponding NSError.
+ */
+NSError *_Nullable FUNErrorForCode(FIRFunctionsErrorCode code);
 
 /**
  * Takes an HTTP status code and optional body and returns a corresponding NSError.
@@ -29,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @param serializer A serializer to use to decode the details in the error response.
  * @return The corresponding error.
  */
-NSError *FUNErrorForResponse(NSInteger status, NSData *_Nullable body, FUNSerializer *serializer);
+NSError *_Nullable FUNErrorForResponse(NSInteger status,
+                                       NSData *_Nullable body,
+                                       FUNSerializer *serializer);
 
 NS_ASSUME_NONNULL_END

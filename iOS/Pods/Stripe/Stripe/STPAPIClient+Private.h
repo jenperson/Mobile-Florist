@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSMutableURLRequest *)configuredRequestForURL:(NSURL *)url;
 
++ (NSURLSessionConfiguration *)sharedUrlSessionConfiguration;
+
 @end
 
 @interface STPAPIClient (SourcesPrivate)
@@ -36,6 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
                                   clientSecret:(NSString *)secret
                             responseCompletion:(STPAPIResponseBlock)completion;
 
+@end
+
+@interface STPAPIClient (EphemeralKeys)
++ (instancetype)apiClientWithEphemeralKey:(STPEphemeralKey *)key;
 @end
 
 @interface STPAPIClient (Customers)
@@ -77,4 +83,9 @@ fromCustomerUsingKey:(STPEphemeralKey *)ephemeralKey
 
 @end
 
+@interface Stripe (Private)
+
++ (NSArray<NSString *> *)supportedPKPaymentNetworks;
+
+@end
 NS_ASSUME_NONNULL_END

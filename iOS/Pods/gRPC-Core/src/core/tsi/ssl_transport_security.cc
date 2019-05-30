@@ -18,6 +18,8 @@
 
 #include <grpc/support/port_platform.h>
 
+#include "src/core/tsi/grpc_shadow_boringssl.h"
+
 #include "src/core/tsi/ssl_transport_security.h"
 
 #include <limits.h>
@@ -40,12 +42,12 @@
 #include <grpc/support/thd_id.h>
 
 extern "C" {
-#include <openssl/bio.h>
-#include <openssl/crypto.h> /* For OPENSSL_free */
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-#include <openssl/x509.h>
-#include <openssl/x509v3.h>
+#include <openssl_grpc/bio.h>
+#include <openssl_grpc/crypto.h> /* For OPENSSL_free */
+#include <openssl_grpc/err.h>
+#include <openssl_grpc/ssl.h>
+#include <openssl_grpc/x509.h>
+#include <openssl_grpc/x509v3.h>
 }
 
 #include "src/core/lib/gpr/useful.h"
@@ -154,9 +156,13 @@ static unsigned long openssl_thread_id_cb(void) {
 #endif
 
 static void init_openssl(void) {
+#if OPENSSL_API_COMPAT >= 0x10100000L
+  OPENSSL_init_ssl(0, NULL);
+#else
   SSL_library_init();
   SSL_load_error_strings();
   OpenSSL_add_all_algorithms();
+#endif
 #if OPENSSL_VERSION_NUMBER < 0x10100000
   if (!CRYPTO_get_locking_callback()) {
     int num_locks = CRYPTO_num_locks();
@@ -216,7 +222,7 @@ static void ssl_log_where_info(const SSL* ssl, int where, int flag,
 /* Used for debugging. TODO(jboeuf): Remove when code is mature enough. */
 static void ssl_info_callback(const SSL* ssl, int where, int ret) {
   if (ret == 0) {
-    gpr_log(GPR_ERROR, "ssl_info_callback: error occured.\n");
+    gpr_log(GPR_ERROR, "ssl_info_callback: error occurred.\n");
     return;
   }
 
@@ -260,14 +266,13 @@ static tsi_result ssl_get_x509_common_name(X509* cert, unsigned char** utf8,
   X509_NAME* subject_name = X509_get_subject_name(cert);
   int utf8_returned_size = 0;
   if (subject_name == nullptr) {
-    gpr_log(GPR_ERROR, "Could not get subject name from certificate.");
+    gpr_log(GPR_INFO, "Could not get subject name from certificate.");
     return TSI_NOT_FOUND;
   }
   common_name_index =
       X509_NAME_get_index_by_NID(subject_name, NID_commonName, -1);
   if (common_name_index == -1) {
-    gpr_log(GPR_ERROR,
-            "Could not get common name of subject from certificate.");
+    gpr_log(GPR_INFO, "Could not get common name of subject from certificate.");
     return TSI_NOT_FOUND;
   }
   common_name_entry = X509_NAME_get_entry(subject_name, common_name_index);
@@ -614,15 +619,19 @@ static tsi_result x509_store_load_certs(X509_STORE* cert_store,
       sk_X509_NAME_push(*root_names, root_name);
       root_name = nullptr;
     }
+    ERR_clear_error();
     if (!X509_STORE_add_cert(cert_store, root)) {
-      gpr_log(GPR_ERROR, "Could not add root certificate to ssl context.");
-      result = TSI_INTERNAL_ERROR;
-      break;
+      unsigned long error = ERR_get_error();
+      if (ERR_GET_LIB(error) != ERR_LIB_X509 ||
+          ERR_GET_REASON(error) != X509_R_CERT_ALREADY_IN_HASH_TABLE) {
+        gpr_log(GPR_ERROR, "Could not add root certificate to ssl context.");
+        result = TSI_INTERNAL_ERROR;
+        break;
+      }
     }
     X509_free(root);
     num_roots++;
   }
-
   if (num_roots == 0) {
     gpr_log(GPR_ERROR, "Could not load any root certificate.");
     result = TSI_INVALID_ARGUMENT;
@@ -646,6 +655,8 @@ static tsi_result ssl_ctx_load_verification_certs(SSL_CTX* context,
                                                   STACK_OF(X509_NAME) *
                                                       *root_name) {
   X509_STORE* cert_store = SSL_CTX_get_cert_store(context);
+  X509_STORE_set_flags(cert_store,
+                       X509_V_FLAG_PARTIAL_CHAIN | X509_V_FLAG_TRUSTED_FIRST);
   return x509_store_load_certs(cert_store, pem_roots, pem_roots_size,
                                root_name);
 }
@@ -1050,9 +1061,9 @@ static tsi_result ssl_handshaker_result_extract_peer(
   }
 
   const char* session_reused = SSL_session_reused(impl->ssl) ? "true" : "false";
-  result = tsi_construct_string_peer_property(
+  result = tsi_construct_string_peer_property_from_cstring(
       TSI_SSL_SESSION_REUSED_PEER_PROPERTY, session_reused,
-      strlen(session_reused) + 1, &peer->properties[peer->property_count]);
+      &peer->properties[peer->property_count]);
   if (result != TSI_OK) return result;
   peer->property_count++;
 
@@ -1648,7 +1659,11 @@ tsi_result tsi_create_ssl_client_handshaker_factory_with_options(
     return TSI_INVALID_ARGUMENT;
   }
 
+#if defined(OPENSSL_NO_TLS1_2_METHOD) || OPENSSL_API_COMPAT >= 0x10100000L
+  ssl_context = SSL_CTX_new(TLS_method());
+#else
   ssl_context = SSL_CTX_new(TLSv1_2_method());
+#endif
   if (ssl_context == nullptr) {
     gpr_log(GPR_ERROR, "Could not create ssl context.");
     return TSI_INVALID_ARGUMENT;
@@ -1805,7 +1820,11 @@ tsi_result tsi_create_ssl_server_handshaker_factory_with_options(
 
   for (i = 0; i < options->num_key_cert_pairs; i++) {
     do {
+#if defined(OPENSSL_NO_TLS1_2_METHOD) || OPENSSL_API_COMPAT >= 0x10100000L
+      impl->ssl_contexts[i] = SSL_CTX_new(TLS_method());
+#else
       impl->ssl_contexts[i] = SSL_CTX_new(TLSv1_2_method());
+#endif
       if (impl->ssl_contexts[i] == nullptr) {
         gpr_log(GPR_ERROR, "Could not create ssl context.");
         result = TSI_OUT_OF_RESOURCES;
@@ -1849,31 +1868,30 @@ tsi_result tsi_create_ssl_server_handshaker_factory_with_options(
           break;
         }
         SSL_CTX_set_client_CA_list(impl->ssl_contexts[i], root_names);
-        switch (options->client_certificate_request) {
-          case TSI_DONT_REQUEST_CLIENT_CERTIFICATE:
-            SSL_CTX_set_verify(impl->ssl_contexts[i], SSL_VERIFY_NONE, nullptr);
-            break;
-          case TSI_REQUEST_CLIENT_CERTIFICATE_BUT_DONT_VERIFY:
-            SSL_CTX_set_verify(impl->ssl_contexts[i], SSL_VERIFY_PEER,
-                               NullVerifyCallback);
-            break;
-          case TSI_REQUEST_CLIENT_CERTIFICATE_AND_VERIFY:
-            SSL_CTX_set_verify(impl->ssl_contexts[i], SSL_VERIFY_PEER, nullptr);
-            break;
-          case TSI_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_BUT_DONT_VERIFY:
-            SSL_CTX_set_verify(
-                impl->ssl_contexts[i],
-                SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-                NullVerifyCallback);
-            break;
-          case TSI_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY:
-            SSL_CTX_set_verify(
-                impl->ssl_contexts[i],
-                SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
-            break;
-        }
-        /* TODO(jboeuf): Add revocation verification. */
       }
+      switch (options->client_certificate_request) {
+        case TSI_DONT_REQUEST_CLIENT_CERTIFICATE:
+          SSL_CTX_set_verify(impl->ssl_contexts[i], SSL_VERIFY_NONE, nullptr);
+          break;
+        case TSI_REQUEST_CLIENT_CERTIFICATE_BUT_DONT_VERIFY:
+          SSL_CTX_set_verify(impl->ssl_contexts[i], SSL_VERIFY_PEER,
+                             NullVerifyCallback);
+          break;
+        case TSI_REQUEST_CLIENT_CERTIFICATE_AND_VERIFY:
+          SSL_CTX_set_verify(impl->ssl_contexts[i], SSL_VERIFY_PEER, nullptr);
+          break;
+        case TSI_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_BUT_DONT_VERIFY:
+          SSL_CTX_set_verify(impl->ssl_contexts[i],
+                             SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                             NullVerifyCallback);
+          break;
+        case TSI_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY:
+          SSL_CTX_set_verify(impl->ssl_contexts[i],
+                             SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                             nullptr);
+          break;
+      }
+      /* TODO(jboeuf): Add revocation verification. */
 
       result = extract_x509_subject_names_from_pem_cert(
           options->pem_key_cert_pairs[i].cert_chain,

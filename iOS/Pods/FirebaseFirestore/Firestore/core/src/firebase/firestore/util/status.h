@@ -17,6 +17,10 @@
 #ifndef FIRESTORE_CORE_SRC_FIREBASE_FIRESTORE_UTIL_STATUS_H_
 #define FIRESTORE_CORE_SRC_FIREBASE_FIRESTORE_UTIL_STATUS_H_
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 #include <functional>
 #include <iosfwd>
 #include <memory>
@@ -30,6 +34,8 @@
 namespace firebase {
 namespace firestore {
 namespace util {
+
+class PlatformError;
 
 /// Denotes success or failure of a call.
 class ABSL_MUST_USE_RESULT Status {
@@ -51,10 +57,16 @@ class ABSL_MUST_USE_RESULT Status {
   }
 
   /// Creates a status object from the given errno error code and message.
-  static Status FromErrno(int errno_code, absl::string_view msg);
+  static Status FromErrno(int errno_code, absl::string_view message);
+
+#if defined(_WIN32)
+  static Status FromLastError(DWORD error, absl::string_view message);
+#endif  // defined(_WIN32)
 
 #if defined(__OBJC__)
   static Status FromNSError(NSError* error);
+
+  NSError* ToNSError() const;
 #endif  // defined(__OBJC__)
 
   /// Returns true iff the status indicates success.
@@ -84,9 +96,17 @@ class ABSL_MUST_USE_RESULT Status {
   ///   `overall_status.Update(new_status);`
   void Update(const Status& new_status);
 
+  /// \brief Adds the message in the given cause to this Status.
+  ///
+  /// \return *this
+  Status& CausedBy(const Status& cause);
+
+  Status& WithPlatformError(std::unique_ptr<PlatformError> error);
+
   /// \brief Return a string representation of this status suitable for
   /// printing. Returns the string `"OK"` for success.
   std::string ToString() const;
+  friend std::ostream& operator<<(std::ostream& out, const Status& status);
 
   // Ignores any errors. This method does nothing except potentially suppress
   // complaints from any tools that are checking that errors are not dropped on
@@ -96,18 +116,49 @@ class ABSL_MUST_USE_RESULT Status {
  private:
   static const std::string& empty_string();
   struct State {
+    State() = default;
+    State(const State& other);
+
     FirestoreErrorCode code;
     std::string msg;
+
+    // An additional platform-specific error representation that was used to
+    // generate this Status. The PlatformError does not meaningfully contribute
+    // to the identity of this Status: it exists to allow tunneling e.g.
+    // NSError* to Status and back to NSError* losslessly.
+    std::unique_ptr<PlatformError> platform_error;
   };
-  // OK status has a `NULL` state_.  Otherwise, `state_` points to
+  // OK status has a `nullptr` state_.  Otherwise, `state_` points to
   // a `State` structure containing the error code and message(s)
   std::unique_ptr<State> state_;
 
   void SlowCopyFrom(const State* src);
 };
 
+class PlatformError {
+ public:
+  virtual ~PlatformError() {
+  }
+
+  virtual std::unique_ptr<PlatformError> Copy() = 0;
+
+  /**
+   * Creates a new PlatformError with the given code and message, whose cause is
+   * this PlatformError.
+   */
+  virtual std::unique_ptr<PlatformError> WrapWith(FirestoreErrorCode code,
+                                                  std::string message) = 0;
+};
+
 inline Status::Status(const Status& s)
     : state_((s.state_ == nullptr) ? nullptr : new State(*s.state_)) {
+}
+
+inline Status::State::State(const State& s)
+    : code(s.code),
+      msg(s.msg),
+      platform_error((s.platform_error == nullptr) ? nullptr
+                                                   : s.platform_error->Copy()) {
 }
 
 inline void Status::operator=(const Status& s) {
@@ -126,7 +177,7 @@ inline bool Status::operator!=(const Status& x) const {
   return !(*this == x);
 }
 
-typedef std::function<void(const Status&)> StatusCallback;
+typedef std::function<void(Status)> StatusCallback;
 
 extern std::string StatusCheckOpHelperOutOfLine(const Status& v,
                                                 const char* msg);

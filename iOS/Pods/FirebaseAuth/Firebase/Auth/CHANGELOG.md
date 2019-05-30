@@ -1,3 +1,42 @@
+# v6.0.0
+- Add support of single sign on. (#2684)
+- Deprecate `reauthenticateAndRetrieveDataWithCredential:completion:`, `signInAndRetrieveDataWithCredential:completion:`, `linkAndRetrieveDataWithCredential:completion:`, `fetchProvidersForEmail:completion:`. (#2723, #2756)
+- Returned oauth secret token in Generic IDP sign-in for Twitter. (#2663)
+- Remove pendingToken from public API. (#2676)
+- `GULAppDelegateSwizzler` is used for the app delegate swizzling. (#2591)
+
+# v5.4.2
+- Support new error code ERROR_INVALID_PROVIDER_ID. (#2629)
+
+# v5.4.1
+- Deprecate Microsoft and Yahoo OAuth Provider ID (#2517)
+- Fix an issue where an exception was thrown when linking OAuth credentials. (#2521)
+- Fix an issue where a wrong error was thrown when handling error with
+  FEDERATED_USER_ID_ALREADY_LINKED. (#2522)
+
+# v5.4.0
+- Add support of Generic IDP (#2405).
+
+# v5.3.0
+- Use the new registerInternalLibrary API to register with FirebaseCore. (#2137)
+
+# v5.2.0
+- Add support of Game Center sign in (#2127).
+
+# v5.1.0
+- Add support of custom FDL domain link (#2121).
+
+# v5.0.5
+- Restore SafariServices framework dependency (#2002).
+
+# v5.0.4
+- Fix analyzer issues (#1740).
+
+# v5.0.3
+- Add `FIRAuthErrorCodeMalformedJWT`, which is raised on JWT token parsing.
+  failures during auth operations (#1436).
+- Migrate to use FirebaseAuthInterop interfaces to access FirebaseAuth (#1501).
+
 # v5.0.2
 - Fix an issue where JWT date timestamps weren't parsed correctly. (#1319)
 - Fix an issue where anonymous accounts weren't correctly promoted to

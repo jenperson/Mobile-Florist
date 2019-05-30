@@ -24,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+#include "Firestore/core/src/firebase/firestore/util/comparison.h"
 #include "Firestore/core/src/firebase/firestore/util/hard_assert.h"
 #include "Firestore/core/src/firebase/firestore/util/hashing.h"
 
@@ -139,23 +140,18 @@ class BasePath {
     return size() <= rhs.size() && std::equal(begin(), end(), rhs.begin());
   }
 
-  bool operator==(const BasePath& rhs) const {
-    return segments_ == rhs.segments_;
+  /**
+   * Returns true if the given argument is a direct child of this path.
+   *
+   * Empty path is a parent of any path that consists of a single segment.
+   */
+  bool IsImmediateParentOf(const T& potential_child) const {
+    return size() + 1 == potential_child.size() &&
+           std::equal(begin(), end(), potential_child.begin());
   }
-  bool operator!=(const BasePath& rhs) const {
-    return segments_ != rhs.segments_;
-  }
-  bool operator<(const BasePath& rhs) const {
-    return segments_ < rhs.segments_;
-  }
-  bool operator>(const BasePath& rhs) const {
-    return segments_ > rhs.segments_;
-  }
-  bool operator<=(const BasePath& rhs) const {
-    return segments_ <= rhs.segments_;
-  }
-  bool operator>=(const BasePath& rhs) const {
-    return segments_ >= rhs.segments_;
+
+  util::ComparisonResult CompareTo(const T& rhs) const {
+    return util::Compare(segments_, rhs.segments_);
   }
 
  protected:

@@ -38,9 +38,6 @@ pod 'FirebaseUI/Facebook', '~> 5.0'
 # Only pull in Google login features
 pod 'FirebaseUI/Google', '~> 5.0'
 
-# Only pull in Twitter login features
-pod 'FirebaseUI/Twitter', '~> 5.0'
-
 # Only pull in Phone Auth login features
 pod 'FirebaseUI/Phone', '~> 5.0'
 ```
@@ -62,12 +59,11 @@ framework](https://firebase.google.com/docs/ios/setup) to your project.
 The READMEs for components of FirebaseUI can be found in their respective
 project folders.
 
-- [Auth](FirebaseAuthUI/README.md)
-- [Firestore](FirebaseFirestoreUI/README.md)
-- [PhoneAuth](FirebasePhoneAuthUI/README.md)
-- [Database](FirebaseDatabaseUI/README.md)
-- [Firestore](FirebaseFirestoreUI/README.md)
-- [Storage](FirebaseStorageUI/README.md)
+- [Auth](Auth/README.md)
+- [PhoneAuth](PhoneAuth/README.md)
+- [Database](Database/README.md)
+- [Firestore](Firestore/README.md)
+- [Storage](Storage/README.md)
 
 ## Local Setup
 
@@ -93,11 +89,9 @@ Copy the `GoogleService-Info.plist` into the sample project folder (`samples/obj
 Go to `Project Settings -> Info tab -> Url Types` and update values for:
 	+ `REVERSED_CLIENT_ID` (get value from `GoogleService-Info.plist`)
 	+ `fb{your-app-id}` (put Facebook App Id)
-	+ `twitterkit-{consumer-key}` (put Twitter App Consumer key)
 
-1. Update `Info.plist` with Twitter and Tacebook configuration values
+1. Update `Info.plist` with Facebook configuration values
 	+ `FacebookAppID -> {your-app-id}` (put Facebook App Id)
-	+ `Fabric -> Kits -> KitInfo -> consumerKey / consumerSecret` (put Twitter App consumer key/secret). Please note that's it's not secure to store the `consumerSecret` in the app itself.
 
 1. Enable Keychain Sharing.<br>
 Facebook SDK requires keychain sharing.<br>

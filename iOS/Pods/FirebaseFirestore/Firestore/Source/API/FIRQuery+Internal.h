@@ -16,52 +16,29 @@
 
 #import "FIRQuery.h"
 
+#include <memory>
+
+#include "Firestore/core/src/firebase/firestore/api/query_core.h"
+
+namespace api = firebase::firestore::api;
+
 @class FSTQuery;
 
 NS_ASSUME_NONNULL_BEGIN
 
-/** Internal FIRQuery API we don't want exposed in our public header files. */
-@interface FIRQuery (Internal)
-+ (FIRQuery *)referenceWithQuery:(FSTQuery *)query firestore:(FIRFirestore *)firestore;
+@interface FIRQuery (/* Init */)
 
-@property(nonatomic, strong, readonly) FSTQuery *query;
+- (instancetype)initWithQuery:(api::Query &&)query NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithQuery:(FSTQuery *)query
+                    firestore:(std::shared_ptr<api::Firestore>)firestore;
 
 @end
 
-// TODO(array-features): Move to FIRQuery.h once backend support is available.
-@interface FIRQuery ()
+/** Internal FIRQuery API we don't want exposed in our public header files. */
+@interface FIRQuery (Internal)
 
-/**
- * Creates and returns a new `FIRQuery` with the additional filter that documents must contain
- * the specified field, it must be an array, and the array must contain the provided value.
- *
- * A query can have only one arrayContains filter.
- *
- * @param field The name of the field containing an array to search
- * @param value The value that must be contained in the array
- *
- * @return The created `FIRQuery`.
- */
-// clang-format off
-- (FIRQuery *)queryWhereField:(NSString *)field
-                arrayContains:(id)value NS_SWIFT_NAME(whereField(_:arrayContains:));
-// clang-format on
-
-/**
- * Creates and returns a new `FIRQuery` with the additional filter that documents must contain
- * the specified field, it must be an array, and the array must contain the provided value.
- *
- * A query can have only one arrayContains filter.
- *
- * @param path The path of the field containing an array to search
- * @param value The value that must be contained in the array
- *
- * @return The created `FIRQuery`.
- */
-// clang-format off
-- (FIRQuery *)queryWhereFieldPath:(FIRFieldPath *)path
-                    arrayContains:(id)value NS_SWIFT_NAME(whereField(_:arrayContains:));
-// clang-format on
+- (FSTQuery *)query;
 
 @end
 
